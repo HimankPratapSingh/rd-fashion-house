@@ -8,7 +8,7 @@ const CONTENT_KEY = 'rd_brand_content';
 const ADMIN_PASS_KEY = 'rd_admin_pass';
 
 export const DEFAULT_CONTENT = {
-  crmUrl: import.meta.env.VITE_CRM_URL || (import.meta.env.PROD ? '/crm' : 'http://localhost:3000'),
+  crmUrl: 'http://localhost:3000',
   hero: {
     title: "R&D's Fashion House",
     subtitle: 'Bespoke Tailoring & Design',
@@ -90,14 +90,12 @@ const PAGE_KEY = 'rd_active_page';
 
 export default function App() {
   const [page, setPage] = useState(() => {
-    // Restore page on refresh — only restore 'crm' if session still exists
     const saved = localStorage.getItem(PAGE_KEY);
     if (saved === 'crm' && localStorage.getItem('rd_session')) return 'crm';
     return 'brand';
   });
   const [content, setContent] = useState(loadContent);
 
-  // Persist page changes so refresh restores the same view
   const navigateTo = (p) => {
     setPage(p);
     if (p === 'brand' || p === 'login') localStorage.removeItem(PAGE_KEY);
