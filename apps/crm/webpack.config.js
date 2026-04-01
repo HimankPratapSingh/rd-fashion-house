@@ -64,7 +64,7 @@ module.exports = {
   entry: path.join(appDirectory, 'index.web.js'),
   output: {
     path: path.resolve(appDirectory, 'web-build'),
-    publicPath: '/',
+    publicPath: process.env.CRM_PUBLIC_PATH || '/',
     filename: 'bundle.[contenthash].js',
   },
   resolve: {

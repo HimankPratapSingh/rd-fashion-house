@@ -2,20 +2,17 @@
   "name": "rd-fashion-house",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "apps/brand-site",
-    "apps/crm"
-  ],
   "scripts": {
     "dev": "concurrently --names \"BRAND,CRM\" --prefix-colors \"yellow,cyan\" \"npm run dev:brand\" \"npm run dev:crm\"",
-    "dev:brand": "npm run dev --workspace=apps/brand-site",
-    "dev:crm": "npm run web --workspace=apps/crm",
-    "build": "npm run build:brand && npm run build:crm",
-    "build:brand": "npm run build --workspace=apps/brand-site",
-    "build:crm": "npm run web:build --workspace=apps/crm",
-    "install:all": "npm install --workspace=apps/brand-site && npm install --workspace=apps/crm"
+    "dev:brand": "cd apps/brand-site && npm run dev",
+    "dev:crm": "cd apps/crm && npm run web",
+    "build": "npm run build:brand && npm run build:crm && npm run merge",
+    "build:brand": "cd apps/brand-site && npm run build",
+    "build:crm": "cd apps/crm && CRM_PUBLIC_PATH=/crm/ npm run web:build",
+    "merge": "mkdir -p dist && cp -r apps/brand-site/dist/. dist/ && mkdir -p dist/crm && cp -r apps/crm/web-build/. dist/crm/",
+    "install:all": "cd apps/brand-site && npm install --legacy-peer-deps && cd ../crm && npm install --legacy-peer-deps"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.2.1"
   }
 }
