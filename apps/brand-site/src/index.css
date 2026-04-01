@@ -400,6 +400,12 @@ a.contact-val:hover { color: var(--gold); }
   padding: 6px 14px; border-radius: 100px; white-space: nowrap; transition: all 0.2s;
 }
 .crm-settings-btn:hover { background: var(--gold-lt); }
+.crm-logout-btn {
+  color: #fff; background: transparent; font-size: 13px; font-weight: 600;
+  padding: 6px 14px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.3);
+  white-space: nowrap; transition: all 0.2s; cursor: pointer;
+}
+.crm-logout-btn:hover { background: rgba(220,38,38,0.8); border-color: transparent; }
 .crm-body { display: flex; flex: 1; overflow: hidden; }
 .crm-iframe { flex: 1; border: none; width: 100%; background: #fff; min-width: 0; }
 

@@ -2,22 +2,25 @@ import { useState } from 'react';
 import logo from './assets/rd_logo.png';
 import watermark from './assets/watermark.png';
 
-// Credentials stored in brand site localStorage
-// Default: admin / admin123  (same as CRM)
-const CREDS_KEY = 'rd_site_creds';
+// Single auth source: CRM's rd_users list (shared localStorage)
+// Default owner if no users exist yet
+const DEFAULT_USER = { id: 'admin_001', username: 'admin', password: 'admin123', name: 'Owner', role: 'owner' };
 
-function getCreds() {
+function getCRMUsers() {
   try {
-    const d = localStorage.getItem(CREDS_KEY);
-    if (d) return JSON.parse(d);
-  } catch {}
-  return [{ username: 'admin', password: 'admin123', role: 'Owner' }];
+    const d = localStorage.getItem('rd_users');
+    const users = d ? JSON.parse(d) : [];
+    if (!users.find(u => u.id === 'admin_001')) users.unshift(DEFAULT_USER);
+    return users;
+  } catch {
+    return [DEFAULT_USER];
+  }
 }
 
-export function validateLogin(username, password) {
-  const creds = getCreds();
-  return creds.find(
-    c => c.username.toLowerCase() === username.toLowerCase() && c.password === password
+function authenticate(username, password) {
+  const users = getCRMUsers();
+  return users.find(
+    u => u.username.toLowerCase() === username.toLowerCase() && u.password === password
   ) || null;
 }
 
@@ -40,11 +43,12 @@ export default function LoginPage({ onSuccess, onBack }) {
     if (!username.trim() || !password) { setError('Please fill in all fields.'); return; }
     setLoading(true);
     setError('');
-    // Small delay for UX feel
     setTimeout(() => {
-      const user = validateLogin(username, password);
+      const user = authenticate(username.trim(), password);
       if (user) {
         setFailCount(0);
+        // Write CRM session — CRM reads this and skips its own login screen
+        localStorage.setItem('rd_session', JSON.stringify(user));
         onSuccess(user);
       } else {
         const newCount = failCount + 1;
@@ -62,12 +66,10 @@ export default function LoginPage({ onSuccess, onBack }) {
 
   return (
     <div className="login-page">
-      {/* Watermark */}
       <div className="login-watermark">
         <img src={watermark} alt="" />
       </div>
 
-      {/* Card */}
       <div className="login-card">
         <button className="login-back" onClick={onBack}>← Back to Website</button>
 
@@ -125,7 +127,6 @@ export default function LoginPage({ onSuccess, onBack }) {
           <span className="login-role-badge">🏪 Manager</span>
           <span className="login-role-badge">🧵 Staff</span>
         </div>
-
       </div>
     </div>
   );
