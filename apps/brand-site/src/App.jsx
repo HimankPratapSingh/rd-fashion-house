@@ -8,7 +8,7 @@ const CONTENT_KEY = 'rd_brand_content';
 const ADMIN_PASS_KEY = 'rd_admin_pass';
 
 export const DEFAULT_CONTENT = {
-  crmUrl: 'http://localhost:3000',
+  crmUrl: '/crm/',
   hero: {
     title: "R&D's Fashion House",
     subtitle: 'Bespoke Tailoring & Design',
