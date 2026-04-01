@@ -4,7 +4,7 @@ import watermark from './assets/watermark.png';
 
 // Single auth source: CRM's rd_users list (shared localStorage)
 // Default owner if no users exist yet
-const DEFAULT_USER = { id: 'admin_001', username: 'admin', password: 'admin123', name: 'Owner', role: 'owner' };
+const DEFAULT_USER = { id: 'admin_001', username: 'admin', password: 'admin123', name: 'Admin', role: 'owner' };
 
 function getCRMUsers() {
   try {

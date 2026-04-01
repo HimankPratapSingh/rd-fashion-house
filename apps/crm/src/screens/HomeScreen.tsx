@@ -3,12 +3,10 @@ import React, { useCallback, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   StatusBar, RefreshControl, useWindowDimensions,
-  Modal, TextInput, FlatList, Image, Platform, ImageSourcePropType,
+  Modal, TextInput, FlatList, Image, ImageSourcePropType,
 } from 'react-native';
 
-const LOGO_SRC: ImageSourcePropType = Platform.OS === 'web'
-  ? { uri: '/rd_logo.png' }
-  : require('../assets/images/rd_logo.png');
+const LOGO_SRC: ImageSourcePropType = require('../assets/images/rd_logo.png');
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors, Fonts, Spacing, BorderRadius, Shadow } from '../theme';
 import { Storage, Order, Expense, FabricItem } from '../utils/store';
