@@ -1,0 +1,21 @@
+{
+  "name": "rd-fashion-house",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/brand-site",
+    "apps/crm"
+  ],
+  "scripts": {
+    "dev": "concurrently --names \"BRAND,CRM\" --prefix-colors \"yellow,cyan\" \"npm run dev:brand\" \"npm run dev:crm\"",
+    "dev:brand": "npm run dev --workspace=apps/brand-site",
+    "dev:crm": "npm run web --workspace=apps/crm",
+    "build": "npm run build:brand && npm run build:crm",
+    "build:brand": "npm run build --workspace=apps/brand-site",
+    "build:crm": "npm run web:build --workspace=apps/crm",
+    "install:all": "npm install --workspace=apps/brand-site && npm install --workspace=apps/crm"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "version": "0.0.1",
+  "autoPort": false,
+  "configurations": [
+    {
+      "name": "Metro",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start"],
+      "port": 8081
+    },
+    {
+      "name": "iOS",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "ios"],
+      "port": null
+    },
+    {
+      "name": "Android",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "android"],
+      "port": null
+    },
+    {
+      "name": "Web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "web"],
+      "port": 3000
+    }
+  ]
+}
