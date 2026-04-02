@@ -16,7 +16,7 @@ export async function setSyncEnabled(enabled: boolean): Promise<void> {
 
 export async function isSyncEnabled(): Promise<boolean> {
   const val = await AsyncStorage.getItem(SYNC_ENABLED_KEY);
-  return val === '1';
+  return val !== '0'; // enabled by default unless explicitly disabled
 }
 
 // ── Last sync time ───────────────────────────────────────────────────────────

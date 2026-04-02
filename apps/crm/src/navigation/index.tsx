@@ -5,14 +5,13 @@ import {
   useWindowDimensions, TouchableOpacity, Image, Platform, ImageSourcePropType,
 } from 'react-native';
 
-const LOGO_SRC: ImageSourcePropType = Platform.OS === 'web'
-  ? { uri: '/rd_logo.png' }
-  : require('../assets/images/rd_logo.png');
+const LOGO_SRC: ImageSourcePropType = require('../assets/images/rd_logo.png');
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Colors, Fonts, Shadow } from '../theme';
 import { AppUser, AuthStorage } from '../utils/auth';
+import { pullAllFromCloud } from '../utils/cloudSync';
 
 import HomeScreen          from '../screens/HomeScreen';
 import OrdersScreen        from '../screens/OrdersScreen';
@@ -138,7 +137,12 @@ export default function AppNavigator() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    AuthStorage.getCurrentSession().then(u => { setUser(u); setLoading(false); });
+    AuthStorage.getCurrentSession().then(async u => {
+      setUser(u);
+      // Pull latest data from Firebase on every app load
+      if (u) pullAllFromCloud().catch(() => {});
+      setLoading(false);
+    });
   }, []);
 
   const signIn  = (u: AppUser) => setUser(u);
