@@ -241,7 +241,7 @@ export default function HomeScreen({ navigation }: any) {
         {/* Role chip */}
         <View style={[styles.roleChip, { backgroundColor: roleStripe.bg }]}>
           <Text style={[styles.roleChipText, { color: roleStripe.text }]}>
-            {ROLE_EMOJI[role || 'staff']} {user?.name}{'  ·  '}{ROLE_LABELS[role || 'staff']}
+            {ROLE_EMOJI[role || 'staff']} {user?.name}{user?.name !== ROLE_LABELS[role || 'staff'] ? '  ·  ' + ROLE_LABELS[role || 'staff'] : ''}
           </Text>
         </View>
       </View>

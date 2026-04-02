@@ -42,7 +42,7 @@ const DEFAULT_OWNER: AppUser = {
   id: 'admin_001',
   username: 'admin',
   password: 'admin123',
-  name: 'Owner',
+  name: 'Admin',
   role: 'owner',
   createdAt: new Date().toISOString(),
 };
