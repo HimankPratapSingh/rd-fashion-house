@@ -9,7 +9,7 @@
     "build": "npm run build:brand && npm run build:crm && npm run merge",
     "build:brand": "cd apps/brand-site && npm run build",
     "build:crm": "cd apps/crm && CRM_PUBLIC_PATH=/crm/ npm run web:build",
-    "merge": "mkdir -p dist && cp -r apps/brand-site/dist/. dist/ && mkdir -p dist/crm && cp -r apps/crm/web-build/. dist/crm/",
+    "merge": "mkdir -p dist && cp -r apps/brand-site/dist/. dist/ && mkdir -p dist/crm && cp -r apps/crm/web-build/. dist/crm/ && cp -r apps/crm/public/. dist/crm/",
     "install:all": "cd apps/brand-site && npm install --legacy-peer-deps && cd ../crm && npm install --legacy-peer-deps"
   },
   "devDependencies": {
