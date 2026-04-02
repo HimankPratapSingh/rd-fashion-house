@@ -20,6 +20,16 @@ export interface FirebaseConfig {
 const FB_CONFIG_KEY = '@rd_firebase_config';
 const SHOP_ID_KEY   = '@rd_shop_id';
 
+// Default config — works out of the box on any device
+const DEFAULT_CONFIG: FirebaseConfig = {
+  apiKey: 'AIzaSyBCRcadlMdny9ElyiqyAaTpX1P7kCjvLfI',
+  authDomain: 'rd-fashion-house.firebaseapp.com',
+  projectId: 'rd-fashion-house',
+  storageBucket: 'rd-fashion-house.firebasestorage.app',
+  messagingSenderId: '958941566427',
+  appId: '1:958941566427:web:80f55cfbfbd9a3f3a083fe',
+};
+
 let _app: FirebaseApp | null = null;
 let _db: Firestore | null    = null;
 let _shopId: string | null   = null;
@@ -68,15 +78,13 @@ export async function initFirebase(config: FirebaseConfig): Promise<Firestore> {
 /** Get Firestore instance (init from stored config if needed) */
 export async function getDB(): Promise<Firestore | null> {
   if (_db) return _db;
-  const config = await loadFirebaseConfig();
-  if (!config || !config.apiKey) return null;
+  const config = (await loadFirebaseConfig()) ?? DEFAULT_CONFIG;
   return initFirebase(config);
 }
 
 /** True if Firebase has been configured */
 export async function isFirebaseConfigured(): Promise<boolean> {
-  const config = await loadFirebaseConfig();
-  return !!(config?.apiKey && config?.projectId);
+  return true; // default config always available
 }
 
 // ── Firestore helpers ────────────────────────────────────────────────────────
