@@ -33,50 +33,50 @@ async function setLastSyncTime(): Promise<void> {
 // Call these after every AsyncStorage write. They silently no-op if sync disabled.
 
 export function pushOrder(order: object & { id: string }) {
-  isSyncEnabled().then(on => { if (on) syncDoc('orders', order.id, order).catch(() => {}); });
+  syncDoc('orders', order.id, order).catch(() => {});
 }
 export function pushCustomer(customer: object & { id: string }) {
-  isSyncEnabled().then(on => { if (on) syncDoc('customers', customer.id, customer).catch(() => {}); });
+  syncDoc('customers', customer.id, customer).catch(() => {});
 }
 export function pushFabric(fabric: object & { id: string }) {
-  isSyncEnabled().then(on => { if (on) syncDoc('fabrics', fabric.id, fabric).catch(() => {}); });
+  syncDoc('fabrics', fabric.id, fabric).catch(() => {});
 }
 export function pushStaff(member: object & { id: string }) {
-  isSyncEnabled().then(on => { if (on) syncDoc('staff', member.id, member).catch(() => {}); });
+  syncDoc('staff', member.id, member).catch(() => {});
 }
 export function pushExpense(expense: object & { id: string }) {
-  isSyncEnabled().then(on => { if (on) syncDoc('expenses', expense.id, expense).catch(() => {}); });
+  syncDoc('expenses', expense.id, expense).catch(() => {});
 }
 export function pushWorkTask(task: object & { id: string }) {
-  isSyncEnabled().then(on => { if (on) syncDoc('workTasks', task.id, task).catch(() => {}); });
+  syncDoc('workTasks', task.id, task).catch(() => {});
 }
 export function pushAppointment(appt: object & { id: string }) {
-  isSyncEnabled().then(on => { if (on) syncDoc('appointments', appt.id, appt).catch(() => {}); });
+  syncDoc('appointments', appt.id, appt).catch(() => {});
 }
 export function pushSupplier(supplier: object & { id: string }) {
-  isSyncEnabled().then(on => { if (on) syncDoc('suppliers', supplier.id, supplier).catch(() => {}); });
+  syncDoc('suppliers', supplier.id, supplier).catch(() => {});
 }
 
 export function removeOrder(id: string) {
-  isSyncEnabled().then(on => { if (on) deleteCloudDoc('orders', id).catch(() => {}); });
+  deleteCloudDoc('orders', id).catch(() => {});
 }
 export function removeCustomer(id: string) {
-  isSyncEnabled().then(on => { if (on) deleteCloudDoc('customers', id).catch(() => {}); });
+  deleteCloudDoc('customers', id).catch(() => {});
 }
 export function removeFabric(id: string) {
-  isSyncEnabled().then(on => { if (on) deleteCloudDoc('fabrics', id).catch(() => {}); });
+  deleteCloudDoc('fabrics', id).catch(() => {});
 }
 export function removeExpense(id: string) {
-  isSyncEnabled().then(on => { if (on) deleteCloudDoc('expenses', id).catch(() => {}); });
+  deleteCloudDoc('expenses', id).catch(() => {});
 }
 export function removeWorkTask(id: string) {
-  isSyncEnabled().then(on => { if (on) deleteCloudDoc('workTasks', id).catch(() => {}); });
+  deleteCloudDoc('workTasks', id).catch(() => {});
 }
 export function removeAppointment(id: string) {
-  isSyncEnabled().then(on => { if (on) deleteCloudDoc('appointments', id).catch(() => {}); });
+  deleteCloudDoc('appointments', id).catch(() => {});
 }
 export function removeSupplier(id: string) {
-  isSyncEnabled().then(on => { if (on) deleteCloudDoc('suppliers', id).catch(() => {}); });
+  deleteCloudDoc('suppliers', id).catch(() => {});
 }
 
 // ── Full push: local → cloud ─────────────────────────────────────────────────
