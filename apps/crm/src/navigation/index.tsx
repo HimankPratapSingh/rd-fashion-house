@@ -11,7 +11,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Colors, Fonts, Shadow } from '../theme';
 import { AppUser, AuthStorage } from '../utils/auth';
-import { pullAllFromCloud } from '../utils/cloudSync';
+import { pullAllFromCloud, pushAllToCloud } from '../utils/cloudSync';
 
 import HomeScreen          from '../screens/HomeScreen';
 import OrdersScreen        from '../screens/OrdersScreen';
@@ -139,8 +139,8 @@ export default function AppNavigator() {
   useEffect(() => {
     AuthStorage.getCurrentSession().then(async u => {
       setUser(u);
-      // Pull latest data from Firebase on every app load
-      if (u) pullAllFromCloud().catch(() => {});
+      // On startup: push local data first (so nothing is lost), then pull cloud data
+      if (u) pushAllToCloud().catch(() => {}).finally(() => pullAllFromCloud().catch(() => {}));
       setLoading(false);
     });
   }, []);
