@@ -34,16 +34,10 @@ let _app: FirebaseApp | null = null;
 let _db: Firestore | null    = null;
 let _shopId: string | null   = null;
 
-/** Generates or retrieves the shop's unique ID */
+/** Fixed shop ID — same on all devices so data is shared */
 export async function getShopId(): Promise<string> {
-  if (_shopId) return _shopId;
-  let id = await AsyncStorage.getItem(SHOP_ID_KEY);
-  if (!id) {
-    id = 'shop_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
-    await AsyncStorage.setItem(SHOP_ID_KEY, id);
-  }
-  _shopId = id;
-  return id;
+  _shopId = 'rd_fashion_house_main';
+  return _shopId;
 }
 
 /** Save Firebase config to AsyncStorage */
