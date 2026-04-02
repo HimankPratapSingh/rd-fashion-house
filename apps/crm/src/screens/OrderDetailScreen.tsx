@@ -103,7 +103,8 @@ export default function OrderDetailScreen({ navigation, route }: any) {
 
   const sendWhatsApp = (message: string) => {
     if (!order) return;
-    const phone = order.customerMobile.replace(/\D/g, '');
+    const phone = (order.customerMobile || '').replace(/\D/g, '');
+    if (!phone) { Alert.alert('No phone number', 'This order has no customer phone number.'); return; }
     const url = `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
     Linking.openURL(url).catch(() => Alert.alert('WhatsApp not available'));
   };

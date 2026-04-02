@@ -3,8 +3,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   pushOrder, pushCustomer, pushFabric, pushStaff, pushExpense,
   pushWorkTask, pushAppointment, pushSupplier,
+  pushReadyMadeItem, pushReadyMadeSale,
   removeOrder, removeCustomer, removeFabric, removeExpense,
   removeWorkTask, removeAppointment, removeSupplier,
+  removeStaff, removeReadyMadeItem,
 } from './cloudSync';
 
 export interface Customer {
@@ -258,6 +260,7 @@ export const Storage = {
   async deleteStaffMember(id: string): Promise<void> {
     const list = await this.getStaff();
     await AsyncStorage.setItem(STAFF_KEY, JSON.stringify(list.filter(s => s.id !== id)));
+    removeStaff(id);
   },
 
   // ── Work Tasks ────────────────────────────────────────────────────────────
@@ -341,15 +344,20 @@ export const Storage = {
     const i = list.findIndex(x => x.id === item.id);
     if (i >= 0) list[i] = item; else list.unshift(item);
     await AsyncStorage.setItem(READY_MADE_ITEMS_KEY, JSON.stringify(list));
+    pushReadyMadeItem(item);
   },
   async deleteReadyMadeItem(id: string): Promise<void> {
     const list = await this.getReadyMadeItems();
     await AsyncStorage.setItem(READY_MADE_ITEMS_KEY, JSON.stringify(list.filter(x => x.id !== id)));
+    removeReadyMadeItem(id);
   },
   async adjustReadyMadeStock(itemId: string, delta: number): Promise<void> {
     const list = await this.getReadyMadeItems();
     const i = list.findIndex(x => x.id === itemId);
-    if (i >= 0) { list[i].stockQty = Math.max(0, list[i].stockQty + delta); }
+    if (i >= 0) {
+      list[i].stockQty = Math.max(0, list[i].stockQty + delta);
+      pushReadyMadeItem(list[i]);
+    }
     await AsyncStorage.setItem(READY_MADE_ITEMS_KEY, JSON.stringify(list));
   },
 
@@ -362,6 +370,7 @@ export const Storage = {
     const i = list.findIndex(x => x.id === sale.id);
     if (i >= 0) list[i] = sale; else list.unshift(sale);
     await AsyncStorage.setItem(READY_MADE_SALES_KEY, JSON.stringify(list));
+    pushReadyMadeSale(sale);
   },
   async getNextSaleNo(): Promise<number> {
     try {

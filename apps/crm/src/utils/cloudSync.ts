@@ -78,12 +78,24 @@ export function removeAppointment(id: string) {
 export function removeSupplier(id: string) {
   deleteCloudDoc('suppliers', id).catch(() => {});
 }
+export function removeStaff(id: string) {
+  deleteCloudDoc('staff', id).catch(() => {});
+}
+export function pushReadyMadeItem(item: object & { id: string }) {
+  syncDoc('readyMadeItems', item.id, item).catch(() => {});
+}
+export function removeReadyMadeItem(id: string) {
+  deleteCloudDoc('readyMadeItems', id).catch(() => {});
+}
+export function pushReadyMadeSale(sale: object & { id: string }) {
+  syncDoc('readyMadeSales', sale.id, sale).catch(() => {});
+}
 
 // ── Full push: local → cloud ─────────────────────────────────────────────────
 // Uploads everything from AsyncStorage to Firestore.
 
 export async function pushAllToCloud(): Promise<void> {
-  const [orders, customers, fabrics, staff, expenses, workTasks, appointments, suppliers] =
+  const [orders, customers, fabrics, staff, expenses, workTasks, appointments, suppliers, readyMadeItems, readyMadeSales] =
     await Promise.all([
       Storage.getOrders(),
       Storage.getCustomers(),
@@ -93,6 +105,8 @@ export async function pushAllToCloud(): Promise<void> {
       Storage.getWorkTasks(),
       Storage.getAppointments(),
       Storage.getSuppliers(),
+      Storage.getReadyMadeItems(),
+      Storage.getReadyMadeSales(),
     ]);
 
   await Promise.all([
@@ -104,23 +118,27 @@ export async function pushAllToCloud(): Promise<void> {
     syncCollection('workTasks', workTasks),
     syncCollection('appointments', appointments),
     syncCollection('suppliers', suppliers),
+    syncCollection('readyMadeItems', readyMadeItems),
+    syncCollection('readyMadeSales', readyMadeSales),
   ]);
 }
 
 // ── Full pull: cloud → local ─────────────────────────────────────────────────
 // Downloads everything from Firestore and overwrites AsyncStorage.
 
-const ORDERS_KEY      = 'rd_orders';
-const CUSTOMERS_KEY   = 'rd_customers';
-const FABRIC_KEY      = 'rd_fabric';
-const STAFF_KEY       = 'rd_staff';
-const EXPENSES_KEY    = 'rd_expenses';
-const WORK_TASKS_KEY  = 'rd_work_tasks';
-const APPOINTMENTS_KEY = 'rd_appointments';
-const SUPPLIERS_KEY   = 'rd_suppliers';
+const ORDERS_KEY           = 'rd_orders';
+const CUSTOMERS_KEY        = 'rd_customers';
+const FABRIC_KEY           = 'rd_fabric';
+const STAFF_KEY            = 'rd_staff';
+const EXPENSES_KEY         = 'rd_expenses';
+const WORK_TASKS_KEY       = 'rd_work_tasks';
+const APPOINTMENTS_KEY     = 'rd_appointments';
+const SUPPLIERS_KEY        = 'rd_suppliers';
+const READY_MADE_ITEMS_KEY = 'rd_ready_made_items';
+const READY_MADE_SALES_KEY = 'rd_ready_made_sales';
 
 export async function pullAllFromCloud(): Promise<void> {
-  const [orders, customers, fabrics, staff, expenses, workTasks, appointments, suppliers] =
+  const [orders, customers, fabrics, staff, expenses, workTasks, appointments, suppliers, readyMadeItems, readyMadeSales] =
     await Promise.all([
       fetchCollection('orders'),
       fetchCollection('customers'),
@@ -130,6 +148,8 @@ export async function pullAllFromCloud(): Promise<void> {
       fetchCollection('workTasks'),
       fetchCollection('appointments'),
       fetchCollection('suppliers'),
+      fetchCollection('readyMadeItems'),
+      fetchCollection('readyMadeSales'),
     ]);
 
   // Strip internal _syncedAt field before storing locally
@@ -144,6 +164,8 @@ export async function pullAllFromCloud(): Promise<void> {
     AsyncStorage.setItem(WORK_TASKS_KEY, JSON.stringify(clean(workTasks))),
     AsyncStorage.setItem(APPOINTMENTS_KEY, JSON.stringify(clean(appointments))),
     AsyncStorage.setItem(SUPPLIERS_KEY, JSON.stringify(clean(suppliers))),
+    ...(readyMadeItems.length ? [AsyncStorage.setItem(READY_MADE_ITEMS_KEY, JSON.stringify(clean(readyMadeItems)))] : []),
+    ...(readyMadeSales.length ? [AsyncStorage.setItem(READY_MADE_SALES_KEY, JSON.stringify(clean(readyMadeSales)))] : []),
   ]);
 }
 
