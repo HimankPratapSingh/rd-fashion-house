@@ -653,43 +653,13 @@ export default function SettingsScreen({ navigation }: any) {
                 </View>
               </View>
 
-              <View style={styles.divider} />
-
-              <View style={{ padding: Spacing.lg, gap: 8 }}>
-                {lastSync && (
-                  <Text style={{ fontFamily: Fonts.body, fontSize: 11, color: Colors.warmGray, marginBottom: 4 }}>
+              {lastSync && (
+                <View style={{ paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md }}>
+                  <Text style={{ fontFamily: Fonts.body, fontSize: 11, color: Colors.warmGray }}>
                     Last sync: {new Date(lastSync).toLocaleString('en-IN')}
                   </Text>
-                )}
-                <View style={{ flexDirection: 'row', gap: 8 }}>
-                  <TouchableOpacity
-                    style={[styles.syncBtn, { flex: 1 }]}
-                    onPress={() => handleSyncNow('push')}
-                    disabled={syncing}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.syncBtnText}>{syncing ? '…' : '⬆️ Upload'}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.syncBtn, { flex: 1 }]}
-                    onPress={() => handleSyncNow('pull')}
-                    disabled={syncing}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.syncBtnText}>{syncing ? '…' : '⬇️ Download'}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.syncBtn, { flex: 1, backgroundColor: Colors.dark }]}
-                    onPress={() => handleSyncNow('both')}
-                    disabled={syncing}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={[styles.syncBtnText, { color: Colors.gold }]}>
-                      {syncing ? '…' : '🔄 Both'}
-                    </Text>
-                  </TouchableOpacity>
                 </View>
-              </View>
+              )}
             </View>
           </>
         )}
