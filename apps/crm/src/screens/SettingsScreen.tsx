@@ -643,83 +643,18 @@ export default function SettingsScreen({ navigation }: any) {
           <>
             <Text style={styles.sectionTitle}>☁️ Cloud Sync (Firebase)</Text>
             <View style={styles.block}>
-              {/* Enable toggle */}
               <View style={[styles.settingsRow, { paddingVertical: 14 }]}>
                 <View style={[styles.settingsIcon, { backgroundColor: '#E8F4FD' }]}>
-                  <Text style={styles.settingsIconText}>🔄</Text>
+                  <Text style={styles.settingsIconText}>🔥</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.settingsLabel}>Enable Cloud Sync</Text>
-                  <Text style={styles.settingsSub}>
-                    {syncEnabled ? '✅ Active — changes sync automatically' : 'Off — all data is local only'}
-                  </Text>
+                  <Text style={styles.settingsLabel}>Firebase — rd-fashion-house</Text>
+                  <Text style={styles.settingsSub}>✅ Connected — syncing automatically</Text>
                 </View>
-                <Switch
-                  value={syncEnabled}
-                  onValueChange={handleToggleSync}
-                  trackColor={{ false: Colors.border, true: Colors.goldLight }}
-                  thumbColor={syncEnabled ? Colors.gold : Colors.warmGray}
-                />
               </View>
 
               <View style={styles.divider} />
 
-              {/* Firebase config */}
-              <TouchableOpacity
-                style={styles.settingsRow}
-                onPress={() => setShowFbForm(v => !v)}
-                activeOpacity={0.8}
-              >
-                <View style={[styles.settingsIcon, { backgroundColor: '#FFF3E0' }]}>
-                  <Text style={styles.settingsIconText}>🔥</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.settingsLabel}>Firebase Config</Text>
-                  <Text style={styles.settingsSub}>
-                    {fbConfig.projectId ? `Project: ${fbConfig.projectId}` : 'Not configured — tap to set up'}
-                  </Text>
-                </View>
-                <Text style={styles.settingsArrow}>{showFbForm ? '∨' : '›'}</Text>
-              </TouchableOpacity>
-
-              {showFbForm && (
-                <View style={{ padding: Spacing.lg, gap: 8 }}>
-                  {([
-                    { key: 'apiKey', label: 'API Key', placeholder: 'AIza...' },
-                    { key: 'authDomain', label: 'Auth Domain', placeholder: 'your-app.firebaseapp.com' },
-                    { key: 'projectId', label: 'Project ID', placeholder: 'your-project-id' },
-                    { key: 'storageBucket', label: 'Storage Bucket', placeholder: 'your-app.appspot.com' },
-                    { key: 'messagingSenderId', label: 'Messaging Sender ID', placeholder: '123456789' },
-                    { key: 'appId', label: 'App ID', placeholder: '1:123:web:abc...' },
-                  ] as { key: keyof FirebaseConfig; label: string; placeholder: string }[]).map(field => (
-                    <View key={field.key}>
-                      <Text style={styles.gstLabel}>{field.label}</Text>
-                      <TextInput
-                        style={[styles.gstInput, { marginTop: 4 }]}
-                        value={fbConfig[field.key]}
-                        onChangeText={v => setFbConfig(prev => ({ ...prev, [field.key]: v }))}
-                        placeholder={field.placeholder}
-                        placeholderTextColor={Colors.warmGray}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                      />
-                    </View>
-                  ))}
-                  <TouchableOpacity style={styles.saveSettingsBtn} onPress={handleSaveFirebaseConfig}>
-                    <Text style={styles.saveSettingsBtnText}>Save Firebase Config</Text>
-                  </TouchableOpacity>
-                  <View style={{ backgroundColor: Colors.goldPale, borderRadius: 8, padding: 10, marginTop: 4 }}>
-                    <Text style={{ fontFamily: Fonts.bodyBold, fontSize: 11, color: Colors.goldDark, marginBottom: 4 }}>
-                      Shop ID (for Firestore rules):
-                    </Text>
-                    <Text style={{ fontFamily: Fonts.body, fontSize: 11, color: Colors.charcoal }}>{shopId}</Text>
-                  </View>
-                </View>
-              )}
-
-              <View style={styles.divider} />
-
-              {/* Sync actions */}
               <View style={{ padding: Spacing.lg, gap: 8 }}>
                 {lastSync && (
                   <Text style={{ fontFamily: Fonts.body, fontSize: 11, color: Colors.warmGray, marginBottom: 4 }}>

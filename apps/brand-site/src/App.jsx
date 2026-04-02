@@ -3,6 +3,7 @@ import BrandSite from './BrandSite.jsx';
 import AdminPanel from './AdminPanel.jsx';
 import LoginPage from './LoginPage.jsx';
 import BrandSettingsPanel from './BrandSettingsPanel.jsx';
+import { pushBrandContent, pullBrandContent } from './firebase.js';
 
 const CONTENT_KEY = 'rd_brand_content';
 const ADMIN_PASS_KEY = 'rd_admin_pass';
@@ -76,6 +77,7 @@ export function loadContent() {
 
 export function saveContent(data) {
   localStorage.setItem(CONTENT_KEY, JSON.stringify(data));
+  pushBrandContent(data);
 }
 
 export function getAdminPass() {
@@ -108,6 +110,17 @@ export default function App() {
     if (!meta) { meta = document.createElement('meta'); meta.setAttribute('name', 'description'); document.head.appendChild(meta); }
     if (content.seo?.description) meta.setAttribute('content', content.seo.description);
   }, [content.seo]);
+
+  // Pull latest brand content from Firebase on load
+  useEffect(() => {
+    pullBrandContent().then(cloud => {
+      if (cloud && Object.keys(cloud).length > 0) {
+        const merged = { ...DEFAULT_CONTENT, ...cloud };
+        setContent(merged);
+        localStorage.setItem(CONTENT_KEY, JSON.stringify(merged));
+      }
+    });
+  }, []);
 
   const updateContent = (data) => {
     setContent(data);
