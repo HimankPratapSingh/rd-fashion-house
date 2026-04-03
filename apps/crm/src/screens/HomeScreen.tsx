@@ -536,10 +536,10 @@ const styles = StyleSheet.create({
   statsBarFYSub: {
     fontFamily: Fonts.body, fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: 0.3,
   },
-  statsRow: { flexDirection: 'row' },
-  statPill: { flex: 1, alignItems: 'center', paddingVertical: 6 },
-  statVal: { fontFamily: Fonts.displaySemiBold, fontSize: 16 },
-  statLbl: { fontFamily: Fonts.body, color: 'rgba(255,255,255,0.45)', fontSize: 9, letterSpacing: 0.5, marginTop: 3 },
+  statsRow: { flexDirection: 'row', flexWrap: 'wrap' },
+  statPill: { flex: 1, minWidth: '25%', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 4 },
+  statVal: { fontFamily: Fonts.displaySemiBold, fontSize: 15, flexShrink: 1 },
+  statLbl: { fontFamily: Fonts.body, color: 'rgba(255,255,255,0.45)', fontSize: 9, letterSpacing: 0.5, marginTop: 3, textAlign: 'center' },
 
   // Alerts
   alertCard: {

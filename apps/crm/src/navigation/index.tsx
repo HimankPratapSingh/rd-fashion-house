@@ -76,10 +76,10 @@ function BoutiqueTabBar({ state, navigation }: any) {
             onPress={() => navigation.navigate(route.name)}
             activeOpacity={0.7}
           >
-            <View style={[tabStyles.iconBox, focused && tabStyles.iconBoxFocused, { width: 46, height: 34 }]}>
+            <View style={[tabStyles.iconBox, focused && tabStyles.iconBoxFocused, { width: 52, height: 36 }]}>
               <Text style={[tabStyles.emoji, focused && tabStyles.emojiFocused]}>{tab.emoji}</Text>
             </View>
-            <Text style={[tabStyles.label, focused && tabStyles.labelFocused, { fontSize: 10 }]}>{tab.label}</Text>
+            <Text style={[tabStyles.label, focused && tabStyles.labelFocused, { fontSize: 11 }]}>{tab.label}</Text>
           </TouchableOpacity>
         );
       })}

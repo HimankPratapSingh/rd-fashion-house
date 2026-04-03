@@ -407,7 +407,16 @@ a.contact-val:hover { color: var(--gold); }
 }
 .crm-logout-btn:hover { background: rgba(220,38,38,0.8); border-color: transparent; }
 .crm-body { display: flex; flex: 1; overflow: hidden; }
-.crm-iframe { flex: 1; border: none; width: 100%; background: #fff; min-width: 0; }
+.crm-iframe { flex: 1; border: none; width: 100%; height: 100%; background: #fff; min-width: 0; }
+
+/* Hide button text labels on small phones, keep icon only */
+@media (max-width: 380px) {
+  .crm-btn-label { display: none; }
+  .crm-settings-btn { padding: 6px 10px; }
+  .crm-logout-btn { padding: 6px 10px; }
+  .crm-topbar-brand { font-size: 10px; }
+  .crm-back-btn { font-size: 12px; padding: 5px 10px; }
+}
 
 /* ── BRAND SETTINGS DRAWER ────────────────────────────── */
 .crm-settings-drawer {
@@ -624,6 +633,15 @@ a.contact-val:hover { color: var(--gold); }
   .admin-row-2, .admin-row-3 { grid-template-columns: 1fr; }
 }
 
+/* ── TABLET (481px – 768px) ───────────────────────────── */
+@media (max-width: 768px) {
+  .services-grid { grid-template-columns: repeat(2, 1fr); }
+  .gallery-grid  { grid-template-columns: repeat(3, 1fr); }
+  .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+  .footer-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .crm-settings-drawer { width: 340px; }
+}
+
 /* ── MOBILE (≤ 480px) ─────────────────────────────────── */
 @media (max-width: 480px) {
   .hero-section { padding: 100px 16px 60px; }
@@ -652,11 +670,17 @@ a.contact-val:hover { color: var(--gold); }
   .nav-brand-text { font-size: 14px; }
   .nav-brand-text em { font-size: 11px; }
 
-  .crm-topbar { padding: 0 12px; gap: 8px; }
-  .crm-topbar-brand { font-size: 12px; }
+  .crm-topbar { padding: 0 10px; gap: 6px; }
+  .crm-topbar-brand { font-size: 11px; }
   .crm-topbar-hint { display: none; }
+  .crm-settings-drawer { width: 100%; position: absolute; top: 48px; left: 0; right: 0; bottom: 0; z-index: 10; }
+  .crm-body { position: relative; }
 
   .admin-overview-grid { grid-template-columns: repeat(2, 1fr); }
   .admin-main { padding: 12px; }
   .admin-main-title { font-size: 18px; }
+  .admin-row-2, .admin-row-3 { grid-template-columns: 1fr; }
+
+  .modal-box { padding: 28px 20px; border-radius: 16px; }
+  .modal-features { grid-template-columns: 1fr; }
 }

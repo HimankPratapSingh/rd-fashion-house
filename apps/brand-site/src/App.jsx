@@ -166,15 +166,15 @@ function CRMView({ crmUrl, onBack, onLogout, content, updateContent }) {
     <div className="crm-shell">
       <div className="crm-topbar">
         <button className="crm-back-btn" onClick={onBack}>
-          ← Back to Website
+          ← Back
         </button>
-        <span className="crm-topbar-brand">R&amp;D's Fashion House · Management System</span>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <span className="crm-topbar-brand">Fashion House · Management</span>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
           <button className="crm-settings-btn" onClick={() => setSettingsOpen(o => !o)}>
-            🌐 Brand Site
+            🌐 <span className="crm-btn-label">Brand Site</span>
           </button>
           <button className="crm-logout-btn" onClick={onLogout}>
-            Logout
+            <span className="crm-btn-label">Logout</span>
           </button>
         </div>
       </div>
