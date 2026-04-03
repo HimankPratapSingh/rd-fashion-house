@@ -169,15 +169,15 @@ export default function OrdersScreen({ navigation }: any) {
                     style={styles.nextStatusBtn}
                     onPress={() => {
                       const next: Record<string, Order['status']> = {
-                        Pending: 'Stitching', Active: 'Stitching',
-                        Stitching: 'Ready', Ready: 'Delivered',
+                        Pending: 'Cutting', Active: 'Cutting',
+                        Cutting: 'Stitching', Stitching: 'Ready', Ready: 'Delivered',
                       };
                       if (next[item.status]) updateStatus(item, next[item.status]);
                     }}
                     activeOpacity={0.8}
                   >
                     <Text style={styles.nextStatusText}>
-                      → {({ Pending: 'Stitching', Active: 'Stitching', Stitching: 'Ready', Ready: 'Delivered' }[item.status]) || ''}
+                      → {({ Pending: 'Cutting', Active: 'Cutting', Cutting: 'Stitching', Stitching: 'Ready', Ready: 'Delivered' }[item.status]) || ''}
                     </Text>
                   </TouchableOpacity>
                 )}

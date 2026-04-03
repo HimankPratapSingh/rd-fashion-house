@@ -90,7 +90,14 @@ export default function HomeScreen({ navigation }: any) {
       .reduce((s, e) => s + e.amount, 0);
     setFyExpenses(fyExp);
     const today = new Date().toLocaleDateString('en-IN');
-    setTodayDel(o.filter(x => x.deliveryDate === today && x.status !== 'Delivered').length);
+    const now = Date.now();
+    // Count overdue (past delivery date, not delivered)
+    const overdueCount = o.filter(x => {
+      if (!x.deliveryDate || x.status === 'Delivered') return false;
+      const parts = x.deliveryDate.includes('/') ? x.deliveryDate.split('/').reverse().join('-') : x.deliveryDate;
+      return new Date(parts).getTime() < now;
+    }).length;
+    setTodayDel(o.filter(x => x.deliveryDate === today && x.status !== 'Delivered').length + overdueCount);
     setPendingTasks(tasks.filter(t => t.status === 'Pending' || t.status === 'In Progress').length);
     setTodayAppts(appts.filter(a => a.date === today && a.status === 'Scheduled').length);
     setLowStockFabrics(fabrics.filter(f => f.metresAvailable <= f.lowStockThreshold));
@@ -368,7 +375,19 @@ export default function HomeScreen({ navigation }: any) {
                   </View>
                 </View>
                 <View style={styles.orderBody}>
-                  <Text style={styles.orderName} numberOfLines={1}>{order.customerName}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={styles.orderName} numberOfLines={1}>{order.customerName}</Text>
+                    {(() => {
+                      if (!order.deliveryDate || order.status === 'Delivered') return null;
+                      const parts = order.deliveryDate.includes('/')
+                        ? order.deliveryDate.split('/').reverse().join('-')
+                        : order.deliveryDate;
+                      const diffDays = (new Date(parts).getTime() - Date.now()) / 86400000;
+                      if (diffDays < 0) return <Text style={styles.overdueBadge}>OVERDUE</Text>;
+                      if (diffDays <= 2) return <Text style={styles.dueSoonBadge}>DUE SOON</Text>;
+                      return null;
+                    })()}
+                  </View>
                   <Text style={styles.orderMeta}>#{order.orderNo} · {order.garmentType} · {order.deliveryDate || 'TBD'}</Text>
                 </View>
                 <View style={styles.orderRight}>
@@ -616,6 +635,8 @@ const styles = StyleSheet.create({
   orderMeta: { fontFamily: Fonts.body, fontSize: 11, color: Colors.warmGray, marginTop: 3 },
   orderRight: { alignItems: 'flex-end', gap: 5 },
   orderAmt: { fontFamily: Fonts.displayMedium, fontSize: 13, color: Colors.dark, marginTop: 4 },
+  overdueBadge: { fontSize: 8, fontFamily: Fonts.bodyBold, color: '#fff', backgroundColor: '#DC2626', paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4 },
+  dueSoonBadge: { fontSize: 8, fontFamily: Fonts.bodyBold, color: '#fff', backgroundColor: '#F59E0B', paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4 },
 
   emptyState: { alignItems: 'center', paddingVertical: 50, paddingHorizontal: 40 },
   emptyIcon: { fontSize: 44, marginBottom: 14 },

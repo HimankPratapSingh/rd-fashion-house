@@ -36,7 +36,10 @@ export default function AddReadyMadeItemScreen({ navigation, route }: any) {
     input.accept = 'image/*';
     input.onchange = (e: any) => {
       const file = e.target?.files?.[0];
-      if (file) setPhotoUri(URL.createObjectURL(file));
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => { if (reader.result) setPhotoUri(reader.result as string); };
+      reader.readAsDataURL(file);
     };
     input.click();
   };

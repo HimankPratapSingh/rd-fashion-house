@@ -215,10 +215,24 @@ export const Storage = {
   },
   async saveOrder(order: Order): Promise<void> {
     const list = await this.getOrders();
+    const isNew = !list.find(o => o.id === order.id);
     const i = list.findIndex(o => o.id === order.id);
     if (i >= 0) list[i] = order; else list.unshift(order);
     await AsyncStorage.setItem(ORDERS_KEY, JSON.stringify(list));
     pushOrder(order);
+
+    // Auto-deduct 2 metres of matching fabric stock on new order creation
+    if (isNew && order.fabricType) {
+      const fabrics = await this.getFabrics();
+      const match = fabrics.find(f =>
+        f.name.toLowerCase().includes(order.fabricType.toLowerCase()) ||
+        order.fabricType.toLowerCase().includes(f.name.toLowerCase())
+      );
+      if (match && match.metresAvailable >= 2) {
+        const updated = { ...match, metresAvailable: match.metresAvailable - 2 };
+        await this.saveFabric(updated);
+      }
+    }
   },
   async deleteOrder(id: string): Promise<void> {
     const list = await this.getOrders();

@@ -10,7 +10,10 @@ export interface AppUser {
   name: string;
   role: UserRole;
   createdAt: string;
+  passwordHashed?: boolean; // true when password field stores SHA-256 hex
 }
+
+const SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000; // 8 hours
 
 // ── Permission helpers ────────────────────────────────────────────────────────
 // Owner  : full read / write / edit
@@ -46,6 +49,24 @@ const DEFAULT_OWNER: AppUser = {
   role: 'owner',
   createdAt: new Date().toISOString(),
 };
+
+/** SHA-256 hash a password string using Web Crypto API */
+export async function hashPassword(password: string): Promise<string> {
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch {
+    // Fallback: simple djb2 hash if crypto not available
+    let hash = 5381;
+    for (let i = 0; i < password.length; i++) {
+      hash = ((hash << 5) + hash) ^ password.charCodeAt(i);
+    }
+    return 'fb_' + Math.abs(hash).toString(16);
+  }
+}
 
 /** Migrate legacy role strings to new role type */
 function migrateRole(role: string): UserRole {
@@ -91,8 +112,11 @@ export const AuthStorage = {
   async saveUser(user: AppUser): Promise<void> {
     const list = await this.getUsers();
     const i = list.findIndex(u => u.id === user.id);
-    if (i >= 0) list[i] = user;
-    else list.push(user);
+    // Hash password if it's plain text
+    if (!user.passwordHashed) {
+      user = { ...user, password: await hashPassword(user.password), passwordHashed: true };
+    }
+    if (i >= 0) list[i] = user; else list.push(user);
     await AsyncStorage.setItem(USERS_KEY, JSON.stringify(list));
   },
 
@@ -111,11 +135,31 @@ export const AuthStorage = {
 
   async login(username: string, password: string): Promise<AppUser | null> {
     const list = await this.getUsers();
-    const user = list.find(
-      u => u.username.toLowerCase() === username.toLowerCase() && u.password === password,
-    );
+    let user: AppUser | undefined;
+
+    for (const u of list) {
+      if (u.username.toLowerCase() !== username.toLowerCase()) continue;
+      if (u.passwordHashed) {
+        // Compare SHA-256 hash
+        const hash = await hashPassword(password);
+        if (hash === u.password) { user = u; break; }
+      } else {
+        // Plain-text (legacy) — if match, re-save as hashed
+        if (u.password === password) {
+          u.password = await hashPassword(password);
+          u.passwordHashed = true;
+          const idx = list.findIndex(x => x.id === u.id);
+          if (idx >= 0) list[idx] = u;
+          await AsyncStorage.setItem(USERS_KEY, JSON.stringify(list));
+          user = u;
+          break;
+        }
+      }
+    }
+
     if (user) {
-      await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      const session = { ...user, _loginAt: Date.now() };
+      await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(session));
       return user;
     }
     return null;
@@ -125,10 +169,14 @@ export const AuthStorage = {
     try {
       const d = await AsyncStorage.getItem(SESSION_KEY);
       if (!d) return null;
-      const u: AppUser = JSON.parse(d);
-      // Migrate session role too
-      u.role = migrateRole(u.role as string);
-      return u;
+      const s: AppUser & { _loginAt?: number } = JSON.parse(d);
+      // Check session timeout
+      if (s._loginAt && Date.now() - s._loginAt > SESSION_TIMEOUT_MS) {
+        await AsyncStorage.removeItem(SESSION_KEY);
+        return null;
+      }
+      s.role = migrateRole(s.role as string);
+      return s;
     } catch {
       return null;
     }
@@ -142,11 +190,12 @@ export const AuthStorage = {
     const list = await this.getUsers();
     const i = list.findIndex(u => u.id === userId);
     if (i >= 0) {
-      list[i].password = newPassword;
+      list[i].password = await hashPassword(newPassword);
+      list[i].passwordHashed = true;
       await AsyncStorage.setItem(USERS_KEY, JSON.stringify(list));
       const session = await this.getCurrentSession();
       if (session?.id === userId) {
-        await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(list[i]));
+        await AsyncStorage.setItem(SESSION_KEY, JSON.stringify({ ...list[i], _loginAt: Date.now() }));
       }
     }
   },

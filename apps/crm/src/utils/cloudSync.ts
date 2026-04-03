@@ -5,7 +5,55 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { syncDoc, deleteCloudDoc, fetchCollection, syncCollection } from './firebase';
 import { Storage } from './store';
 
-const LAST_SYNC_KEY = '@rd_last_sync';
+const LAST_SYNC_KEY  = '@rd_last_sync';
+const RETRY_QUEUE_KEY = '@rd_sync_retry_queue';
+
+interface RetryOp {
+  id: string;           // unique op id
+  collection: string;
+  docId: string;
+  data: object | null;  // null = delete
+  failedAt: number;
+}
+
+async function enqueueRetry(op: Omit<RetryOp, 'id' | 'failedAt'>): Promise<void> {
+  try {
+    const raw = await AsyncStorage.getItem(RETRY_QUEUE_KEY);
+    const queue: RetryOp[] = raw ? JSON.parse(raw) : [];
+    // Deduplicate: replace existing op for same collection+docId
+    const idx = queue.findIndex(q => q.collection === op.collection && q.docId === op.docId);
+    const entry: RetryOp = { ...op, id: `${op.collection}_${op.docId}`, failedAt: Date.now() };
+    if (idx >= 0) queue[idx] = entry; else queue.push(entry);
+    // Keep queue bounded
+    if (queue.length > 200) queue.splice(0, queue.length - 200);
+    await AsyncStorage.setItem(RETRY_QUEUE_KEY, JSON.stringify(queue));
+  } catch { /* ignore */ }
+}
+
+/** Call this on startup to replay any ops that failed while offline */
+export async function flushRetryQueue(): Promise<void> {
+  try {
+    const raw = await AsyncStorage.getItem(RETRY_QUEUE_KEY);
+    if (!raw) return;
+    const queue: RetryOp[] = JSON.parse(raw);
+    if (queue.length === 0) return;
+    const succeeded: string[] = [];
+    await Promise.all(queue.map(async op => {
+      try {
+        if (op.data === null) {
+          await deleteCloudDoc(op.collection, op.docId);
+        } else {
+          await syncDoc(op.collection, op.docId, op.data);
+        }
+        succeeded.push(op.id);
+      } catch { /* still offline, leave in queue */ }
+    }));
+    if (succeeded.length > 0) {
+      const remaining = queue.filter(q => !succeeded.includes(q.id));
+      await AsyncStorage.setItem(RETRY_QUEUE_KEY, JSON.stringify(remaining));
+    }
+  } catch { /* ignore */ }
+}
 
 // ── Last sync time ───────────────────────────────────────────────────────────
 
@@ -20,64 +68,33 @@ async function setLastSyncTime(): Promise<void> {
 // ── Fire-and-forget single-doc sync ─────────────────────────────────────────
 // Call these after every AsyncStorage write. They silently no-op if sync disabled.
 
-export function pushOrder(order: object & { id: string }) {
-  syncDoc('orders', order.id, order).catch(() => {});
+function push(collection: string, id: string, data: object) {
+  syncDoc(collection, id, data).catch(() => enqueueRetry({ collection, docId: id, data }));
 }
-export function pushCustomer(customer: object & { id: string }) {
-  syncDoc('customers', customer.id, customer).catch(() => {});
-}
-export function pushFabric(fabric: object & { id: string }) {
-  syncDoc('fabrics', fabric.id, fabric).catch(() => {});
-}
-export function pushStaff(member: object & { id: string }) {
-  syncDoc('staff', member.id, member).catch(() => {});
-}
-export function pushExpense(expense: object & { id: string }) {
-  syncDoc('expenses', expense.id, expense).catch(() => {});
-}
-export function pushWorkTask(task: object & { id: string }) {
-  syncDoc('workTasks', task.id, task).catch(() => {});
-}
-export function pushAppointment(appt: object & { id: string }) {
-  syncDoc('appointments', appt.id, appt).catch(() => {});
-}
-export function pushSupplier(supplier: object & { id: string }) {
-  syncDoc('suppliers', supplier.id, supplier).catch(() => {});
+function remove(collection: string, id: string) {
+  deleteCloudDoc(collection, id).catch(() => enqueueRetry({ collection, docId: id, data: null }));
 }
 
-export function removeOrder(id: string) {
-  deleteCloudDoc('orders', id).catch(() => {});
-}
-export function removeCustomer(id: string) {
-  deleteCloudDoc('customers', id).catch(() => {});
-}
-export function removeFabric(id: string) {
-  deleteCloudDoc('fabrics', id).catch(() => {});
-}
-export function removeExpense(id: string) {
-  deleteCloudDoc('expenses', id).catch(() => {});
-}
-export function removeWorkTask(id: string) {
-  deleteCloudDoc('workTasks', id).catch(() => {});
-}
-export function removeAppointment(id: string) {
-  deleteCloudDoc('appointments', id).catch(() => {});
-}
-export function removeSupplier(id: string) {
-  deleteCloudDoc('suppliers', id).catch(() => {});
-}
-export function removeStaff(id: string) {
-  deleteCloudDoc('staff', id).catch(() => {});
-}
-export function pushReadyMadeItem(item: object & { id: string }) {
-  syncDoc('readyMadeItems', item.id, item).catch(() => {});
-}
-export function removeReadyMadeItem(id: string) {
-  deleteCloudDoc('readyMadeItems', id).catch(() => {});
-}
-export function pushReadyMadeSale(sale: object & { id: string }) {
-  syncDoc('readyMadeSales', sale.id, sale).catch(() => {});
-}
+export function pushOrder(order: object & { id: string })          { push('orders',         order.id,    order); }
+export function pushCustomer(customer: object & { id: string })    { push('customers',      customer.id, customer); }
+export function pushFabric(fabric: object & { id: string })        { push('fabrics',        fabric.id,   fabric); }
+export function pushStaff(member: object & { id: string })         { push('staff',          member.id,   member); }
+export function pushExpense(expense: object & { id: string })      { push('expenses',       expense.id,  expense); }
+export function pushWorkTask(task: object & { id: string })        { push('workTasks',      task.id,     task); }
+export function pushAppointment(appt: object & { id: string })     { push('appointments',   appt.id,     appt); }
+export function pushSupplier(supplier: object & { id: string })    { push('suppliers',      supplier.id, supplier); }
+export function pushReadyMadeItem(item: object & { id: string })   { push('readyMadeItems', item.id,     item); }
+export function pushReadyMadeSale(sale: object & { id: string })   { push('readyMadeSales', sale.id,     sale); }
+
+export function removeOrder(id: string)          { remove('orders',         id); }
+export function removeCustomer(id: string)       { remove('customers',      id); }
+export function removeFabric(id: string)         { remove('fabrics',        id); }
+export function removeExpense(id: string)        { remove('expenses',       id); }
+export function removeWorkTask(id: string)       { remove('workTasks',      id); }
+export function removeAppointment(id: string)    { remove('appointments',   id); }
+export function removeSupplier(id: string)       { remove('suppliers',      id); }
+export function removeStaff(id: string)          { remove('staff',          id); }
+export function removeReadyMadeItem(id: string)  { remove('readyMadeItems', id); }
 
 // ── Full push: local → cloud ─────────────────────────────────────────────────
 // Uploads everything from AsyncStorage to Firestore.

@@ -1,5 +1,5 @@
 // src/screens/Step2DesignScreen.tsx
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet,
   TouchableOpacity, KeyboardAvoidingView, Platform,
@@ -28,19 +28,17 @@ export default function Step2DesignScreen({ navigation, route }: any) {
   const [designNotes, setDesignNotes] = useState(draft.designNotes || '');
   const [photoUri, setPhotoUri] = useState(draft.designPhotoUri || null);
   const [sketchData, setSketchData] = useState<string | null>(draft.designSketchData || null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
   const handlePickPhoto = () => {
-    // Web: use a hidden file input to trigger the native image picker
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.onchange = (e: any) => {
       const file = e.target?.files?.[0];
-      if (file) {
-        const url = URL.createObjectURL(file);
-        setPhotoUri(url);
-      }
+      if (!file) return;
+      // Use FileReader to get a persistent base64 data URL (survives refresh)
+      const reader = new FileReader();
+      reader.onload = () => { if (reader.result) setPhotoUri(reader.result as string); };
+      reader.readAsDataURL(file);
     };
     input.click();
   };

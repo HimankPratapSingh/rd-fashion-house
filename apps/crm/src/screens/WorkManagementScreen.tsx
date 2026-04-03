@@ -7,7 +7,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors, Fonts, Spacing, BorderRadius, Shadow } from '../theme';
-import { Storage, WorkTask } from '../utils/store';
+import { Storage, WorkTask, Order } from '../utils/store';
 import { Avatar } from '../components';
 import { useAuth } from '../navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -47,6 +47,7 @@ export default function WorkManagementScreen({ navigation, route }: any) {
   const [tasks, setTasks] = useState<WorkTask[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<FilterStatus>('All');
+  const [tailorWorkload, setTailorWorkload] = useState<{ name: string; active: number; ready: number; cutting: number; stitching: number }[]>([]);
 
   // ── Attendance state ──────────────────────────────────────────────────────
   const [attendance, setAttendance] = useState<Record<string, boolean>>(() =>
@@ -55,8 +56,25 @@ export default function WorkManagementScreen({ navigation, route }: any) {
   const [attendanceSaved, setAttendanceSaved] = useState(false);
 
   const loadData = async () => {
-    const all = await Storage.getWorkTasks();
+    const [all, orders] = await Promise.all([
+      Storage.getWorkTasks(),
+      Storage.getOrders(),
+    ]);
     setTasks(all);
+    // Build tailor workload from orders
+    const workloadMap: Record<string, { active: number; ready: number; cutting: number; stitching: number }> = {};
+    orders.forEach(o => {
+      if (!o.assignedTo || o.status === 'Delivered') return;
+      if (!workloadMap[o.assignedTo]) workloadMap[o.assignedTo] = { active: 0, ready: 0, cutting: 0, stitching: 0 };
+      if (o.status === 'Active' || o.status === 'Pending') workloadMap[o.assignedTo].active++;
+      else if (o.status === 'Cutting') workloadMap[o.assignedTo].cutting++;
+      else if (o.status === 'Stitching') workloadMap[o.assignedTo].stitching++;
+      else if (o.status === 'Ready') workloadMap[o.assignedTo].ready++;
+    });
+    setTailorWorkload(
+      Object.entries(workloadMap).map(([name, v]) => ({ name, ...v }))
+        .sort((a, b) => (b.active + b.cutting + b.stitching) - (a.active + a.cutting + a.stitching))
+    );
   };
 
   const loadAttendance = async () => {
@@ -393,6 +411,40 @@ export default function WorkManagementScreen({ navigation, route }: any) {
           </TouchableOpacity>
         </View>
 
+        {/* ── Tailor Workload ── */}
+        {tailorWorkload.length > 0 && (
+          <View style={styles.workloadSection}>
+            <Text style={styles.workloadTitle}>Tailor Workload</Text>
+            {tailorWorkload.map(t => {
+              const total = t.active + t.cutting + t.stitching + t.ready;
+              const maxLoad = 10;
+              const pct = Math.min(total / maxLoad, 1);
+              const barColor = pct > 0.8 ? '#DC2626' : pct > 0.5 ? '#F59E0B' : '#22C55E';
+              return (
+                <View key={t.name} style={styles.workloadRow}>
+                  <View style={styles.workloadLeft}>
+                    <View style={styles.workloadAvatar}>
+                      <Text style={styles.workloadAvatarText}>{t.name.charAt(0)}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.workloadName}>{t.name}</Text>
+                      <View style={styles.workloadBarBg}>
+                        <View style={[styles.workloadBarFill, { width: `${pct * 100}%` as any, backgroundColor: barColor }]} />
+                      </View>
+                    </View>
+                  </View>
+                  <View style={styles.workloadChips}>
+                    {t.active > 0 && <Text style={[styles.workloadChip, { color: Colors.activeGreen, backgroundColor: Colors.activeBg }]}>{t.active} Active</Text>}
+                    {t.cutting > 0 && <Text style={[styles.workloadChip, { color: '#E65100', backgroundColor: '#FFF3E0' }]}>{t.cutting} Cutting</Text>}
+                    {t.stitching > 0 && <Text style={[styles.workloadChip, { color: Colors.pendingBlue, backgroundColor: Colors.pendingBg }]}>{t.stitching} Stitching</Text>}
+                    {t.ready > 0 && <Text style={[styles.workloadChip, { color: Colors.readyAmber, backgroundColor: Colors.readyBg }]}>{t.ready} Ready</Text>}
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
         <View style={{ height: 100 }} />
       </ScrollView>
     </View>
@@ -678,5 +730,34 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bodyBold,
     fontSize: 14,
     color: Colors.gold,
+  },
+
+  // Tailor Workload
+  workloadSection: {
+    marginHorizontal: Spacing.lg, marginTop: Spacing.md,
+    backgroundColor: Colors.white, borderRadius: BorderRadius.lg,
+    borderWidth: 1, borderColor: Colors.borderGray, padding: Spacing.lg,
+    ...Shadow.card,
+  },
+  workloadTitle: {
+    fontFamily: Fonts.bodyBold, fontSize: 11, color: Colors.warmGray,
+    letterSpacing: 1, marginBottom: 14,
+  },
+  workloadRow: { marginBottom: 14 },
+  workloadLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 },
+  workloadAvatar: {
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: Colors.goldPale, borderWidth: 1, borderColor: Colors.border,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  workloadAvatarText: { fontFamily: Fonts.bodyBold, fontSize: 13, color: Colors.goldDark },
+  workloadName: { fontFamily: Fonts.bodyBold, fontSize: 13, color: Colors.dark, marginBottom: 4 },
+  workloadBarBg: { height: 5, backgroundColor: Colors.borderGray, borderRadius: 3, overflow: 'hidden' },
+  workloadBarFill: { height: 5, borderRadius: 3 },
+  workloadChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginLeft: 42 },
+  workloadChip: {
+    fontFamily: Fonts.bodyBold, fontSize: 10,
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderRadius: BorderRadius.full,
   },
 });
