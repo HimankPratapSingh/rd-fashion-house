@@ -2,7 +2,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, PanResponder,
-  StatusBar, Alert, useWindowDimensions, ScrollView,
+  StatusBar, useWindowDimensions, ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Fonts, BorderRadius, Shadow } from '../theme';
@@ -128,18 +128,10 @@ export default function DesignSketchScreen({ navigation, route }: any) {
   }, []);
 
   const handleClear = () => {
-    Alert.alert('Clear Canvas', 'Remove all drawing?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Clear',
-        style: 'destructive',
-        onPress: () => {
-          completedPaths.current = [];
-          currentPoints.current = [];
-          setTick(t => t + 1);
-        },
-      },
-    ]);
+    if (completedPaths.current.length === 0) return;
+    completedPaths.current = [];
+    currentPoints.current = [];
+    setTick(t => t + 1);
   };
 
   const handleSave = () => {
