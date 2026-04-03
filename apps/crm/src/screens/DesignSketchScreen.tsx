@@ -82,10 +82,14 @@ export default function DesignSketchScreen({ navigation, route }: any) {
   const canvasHeight = Math.max(300, height - insets.top - insets.bottom - 210);
 
   const panResponder = PanResponder.create({
+    // Use Capture variants so we grab the touch before the browser or any
+    // parent ScrollView can claim it (prevents page scroll while drawing)
     onStartShouldSetPanResponder: () => true,
+    onStartShouldSetPanResponderCapture: () => true,
     onMoveShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponderCapture: () => true,
+    onPanResponderTerminationRequest: () => false, // don't give up mid-stroke
     onPanResponderGrant: (evt) => {
-      // locationX/locationY are always relative to the responder view — no offset math needed
       const { locationX, locationY } = evt.nativeEvent;
       currentPoints.current = [{ x: locationX, y: locationY }];
       moveThrottle.current = 0;
@@ -306,7 +310,7 @@ export default function DesignSketchScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.screenBg },
+  container: { flex: 1, backgroundColor: Colors.screenBg, overflow: 'hidden' as any },
 
   header: {
     flexDirection: 'row',
@@ -396,6 +400,10 @@ const styles = StyleSheet.create({
     position: 'relative',
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderGray,
+    // Prevent the browser from scrolling or zooming while drawing
+    touchAction: 'none' as any,
+    userSelect: 'none' as any,
+    WebkitUserSelect: 'none' as any,
   },
   gridLine: {
     position: 'absolute', left: 0, right: 0,
