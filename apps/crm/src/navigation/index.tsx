@@ -62,17 +62,10 @@ const TABS = [
   { name: 'Reports',   emoji: '📈', label: 'Reports'  },
 ];
 
+// ── Bottom tab bar (phone) ────────────────────────────────────────────────────
 function BoutiqueTabBar({ state, navigation }: any) {
-  const { width } = useWindowDimensions();
-  const isMobile = width < 480;
-  const iconBoxW = isMobile ? 44 : 38;
-  const iconBoxH = isMobile ? 32 : 28;
-  const labelSize = isMobile ? 10 : 9;
-  const paddingBottom = isMobile ? 12 : 16;
-  const paddingTop = isMobile ? 8 : 6;
-
   return (
-    <View style={[tabStyles.bar, { paddingBottom, paddingTop, width: '100%' }]}>
+    <View style={[tabStyles.bar, { paddingBottom: 14, paddingTop: 8 }]}>
       {state.routes.map((route: any, i: number) => {
         const tab     = TABS.find(t => t.name === route.name) || TABS[0];
         const focused = state.index === i;
@@ -83,10 +76,34 @@ function BoutiqueTabBar({ state, navigation }: any) {
             onPress={() => navigation.navigate(route.name)}
             activeOpacity={0.7}
           >
-            <View style={[tabStyles.iconBox, focused && tabStyles.iconBoxFocused, { width: iconBoxW, height: iconBoxH }]}>
+            <View style={[tabStyles.iconBox, focused && tabStyles.iconBoxFocused, { width: 46, height: 34 }]}>
               <Text style={[tabStyles.emoji, focused && tabStyles.emojiFocused]}>{tab.emoji}</Text>
             </View>
-            <Text style={[tabStyles.label, focused && tabStyles.labelFocused, { fontSize: labelSize }]}>{tab.label}</Text>
+            <Text style={[tabStyles.label, focused && tabStyles.labelFocused, { fontSize: 10 }]}>{tab.label}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+// ── Sidebar nav (tablet/iPad ≥ 768px) ────────────────────────────────────────
+function BoutiqueSidebar({ state, navigation }: any) {
+  return (
+    <View style={tabStyles.sidebar}>
+      <Image source={LOGO_SRC} style={{ width: 110, height: 52, marginBottom: 28 }} resizeMode="contain" />
+      {state.routes.map((route: any, i: number) => {
+        const tab     = TABS.find(t => t.name === route.name) || TABS[0];
+        const focused = state.index === i;
+        return (
+          <TouchableOpacity
+            key={route.key}
+            style={[tabStyles.sidebarItem, focused && tabStyles.sidebarItemFocused]}
+            onPress={() => navigation.navigate(route.name)}
+            activeOpacity={0.7}
+          >
+            <Text style={[tabStyles.sidebarEmoji]}>{tab.emoji}</Text>
+            <Text style={[tabStyles.sidebarLabel, focused && tabStyles.sidebarLabelFocused]}>{tab.label}</Text>
           </TouchableOpacity>
         );
       })}
@@ -95,10 +112,13 @@ function BoutiqueTabBar({ state, navigation }: any) {
 }
 
 function MainTabs() {
+  const { width } = useWindowDimensions();
+  const isTablet  = width >= 768;
   return (
     <Tab.Navigator
-      tabBar={props => <BoutiqueTabBar {...props} />}
+      tabBar={props => isTablet ? <BoutiqueSidebar {...props} /> : <BoutiqueTabBar {...props} />}
       screenOptions={{ headerShown: false }}
+      tabBarPosition={isTablet ? 'left' : 'bottom'}
     >
       <Tab.Screen name="Home"      component={HomeScreen} />
       <Tab.Screen name="Orders"    component={OrdersScreen} />
@@ -188,8 +208,9 @@ export default function AppNavigator() {
   );
 }
 
-// ── Boutique Tab Bar Styles ───────────────────────────────────────────────────
+// ── Styles ────────────────────────────────────────────────────────────────────
 const tabStyles = StyleSheet.create({
+  // Bottom bar (phone)
   bar: {
     flexDirection: 'row',
     backgroundColor: Colors.dark,
@@ -197,27 +218,48 @@ const tabStyles = StyleSheet.create({
     borderTopColor: 'rgba(201,168,76,0.18)',
     ...Shadow.deep,
   },
-  tab: {
-    flex: 1, alignItems: 'center', gap: 3,
+  tab:           { flex: 1, alignItems: 'center', gap: 3 },
+  iconBox:       { alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
+  iconBoxFocused:{ backgroundColor: 'rgba(201,168,76,0.15)' },
+  emoji:         { fontSize: 20, opacity: 0.4 },
+  emojiFocused:  { opacity: 1 },
+  label:         { fontFamily: Fonts.bodyBold, color: 'rgba(255,255,255,0.35)', letterSpacing: 0.3 },
+  labelFocused:  { color: Colors.gold },
+
+  // Sidebar (tablet/iPad)
+  sidebar: {
+    width: 160,
+    backgroundColor: Colors.dark,
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(201,168,76,0.18)',
+    paddingTop: 32,
+    paddingHorizontal: 12,
+    paddingBottom: 24,
+    alignItems: 'flex-start',
   },
-  iconBox: {
-    alignItems: 'center', justifyContent: 'center',
-    borderRadius: 10,
+  sidebarItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    width: '100%',
+    marginBottom: 4,
   },
-  iconBoxFocused: {
+  sidebarItemFocused: {
     backgroundColor: 'rgba(201,168,76,0.15)',
   },
-  emoji: {
+  sidebarEmoji: {
     fontSize: 20,
-    opacity: 0.4,
   },
-  emojiFocused: { opacity: 1 },
-  label: {
+  sidebarLabel: {
     fontFamily: Fonts.bodyBold,
-    color: 'rgba(255,255,255,0.35)',
-    letterSpacing: 0.3,
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.45)',
+    letterSpacing: 0.2,
   },
-  labelFocused: {
+  sidebarLabelFocused: {
     color: Colors.gold,
   },
 });
