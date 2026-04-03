@@ -11,16 +11,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const COLUMNS: { key: Order['status']; label: string; color: string; bg: string }[] = [
   { key: 'Pending',   label: 'Pending',   color: Colors.warmGray,  bg: '#F5F5F5' },
+  { key: 'Cutting',   label: 'Cutting',   color: '#E65100',         bg: '#FFF3E0' },
   { key: 'Stitching', label: 'Stitching', color: Colors.pendingBlue, bg: Colors.pendingBg },
   { key: 'Ready',     label: 'Ready',     color: Colors.readyAmber, bg: Colors.readyBg },
   { key: 'Delivered', label: 'Delivered', color: Colors.activeGreen, bg: Colors.activeBg },
 ];
 
 const STATUS_NEXT: Partial<Record<Order['status'], Order['status']>> = {
-  Pending: 'Stitching', Active: 'Stitching', Stitching: 'Ready', Ready: 'Delivered',
+  Pending: 'Cutting', Active: 'Cutting', Cutting: 'Stitching', Stitching: 'Ready', Ready: 'Delivered',
 };
 const STATUS_PREV: Partial<Record<Order['status'], Order['status']>> = {
-  Stitching: 'Pending', Ready: 'Stitching', Delivered: 'Ready',
+  Cutting: 'Pending', Stitching: 'Cutting', Ready: 'Stitching', Delivered: 'Ready',
 };
 
 export default function KanbanScreen({ navigation }: any) {
@@ -48,6 +49,7 @@ export default function KanbanScreen({ navigation }: any) {
 
   const colOrders = orders.filter(o => {
     if (activeCol === 'Pending') return o.status === 'Pending' || o.status === 'Active';
+    if (activeCol === 'Cutting') return o.status === 'Cutting';
     return o.status === activeCol;
   });
 

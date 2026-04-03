@@ -62,7 +62,7 @@ function renderSegment(
 }
 
 export default function DesignSketchScreen({ navigation, route }: any) {
-  const { width, height } = useWindowDimensions();
+  const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const existingData = route.params?.existingSketch || null;
 
@@ -77,30 +77,23 @@ export default function DesignSketchScreen({ navigation, route }: any) {
   const currentPoints = useRef<Point[]>([]);
   const moveThrottle = useRef(0);
 
-  // FIX: measure the canvas view's page offset so touch coords are always
-  // relative to the canvas — not the screen origin.
   const canvasRef = useRef<View>(null);
-  const canvasPageOffset = useRef({ x: 0, y: 0 });
 
-  const canvasHeight = height - insets.top - insets.bottom - 210;
+  const canvasHeight = Math.max(300, height - insets.top - insets.bottom - 210);
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
     onPanResponderGrant: (evt) => {
-      // Use pageX/pageY minus the canvas's measured offset for reliable coords
-      const { pageX, pageY } = evt.nativeEvent;
-      const x = pageX - canvasPageOffset.current.x;
-      const y = pageY - canvasPageOffset.current.y;
-      currentPoints.current = [{ x, y }];
+      // locationX/locationY are always relative to the responder view — no offset math needed
+      const { locationX, locationY } = evt.nativeEvent;
+      currentPoints.current = [{ x: locationX, y: locationY }];
       moveThrottle.current = 0;
       setTick(t => t + 1);
     },
     onPanResponderMove: (evt) => {
-      const { pageX, pageY } = evt.nativeEvent;
-      const x = pageX - canvasPageOffset.current.x;
-      const y = pageY - canvasPageOffset.current.y;
-      currentPoints.current.push({ x, y });
+      const { locationX, locationY } = evt.nativeEvent;
+      currentPoints.current.push({ x: locationX, y: locationY });
       moveThrottle.current++;
       if (moveThrottle.current % 2 === 0) {
         setTick(t => t + 1);
@@ -258,18 +251,12 @@ export default function DesignSketchScreen({ navigation, route }: any) {
       <View
         ref={canvasRef}
         style={[styles.canvas, { height: canvasHeight }]}
-        onLayout={() => {
-          // Measure absolute position after layout so touch offset is correct
-          canvasRef.current?.measure((_x, _y, _w, _h, pageX, pageY) => {
-            canvasPageOffset.current = { x: pageX, y: pageY };
-          });
-        }}
         {...panResponder.panHandlers}
       >
         {/* Grid lines for fashion sketch */}
         <View style={[styles.gridLine, { top: canvasHeight * 0.33 }]} />
         <View style={[styles.gridLine, { top: canvasHeight * 0.66 }]} />
-        <View style={[styles.gridLineV, { left: width * 0.5 - 1 }]} />
+        <View style={[styles.gridLineV, { left: '50%' }]} />
 
         {/* Guide label */}
         {allPathsForRender.length === 0 && (

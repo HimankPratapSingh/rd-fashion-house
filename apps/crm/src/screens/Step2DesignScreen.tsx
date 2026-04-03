@@ -1,5 +1,5 @@
 // src/screens/Step2DesignScreen.tsx
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View, Text, ScrollView, StyleSheet,
   TouchableOpacity, KeyboardAvoidingView, Platform,
@@ -13,6 +13,7 @@ const GARMENT_TYPES = ['Suit', 'Blouse', 'Sharara', 'Lehenga', 'Salwar', 'Kurti'
 const DESIGN_STYLES = ['Simple / Plain', 'Embroidered', 'Heavy Work (Bridal)', 'Printed', 'Block Print', 'Mirror Work'];
 const NECK_TYPES = ['Round Neck', 'V-Neck', 'Boat Neck', 'Princess Cut', 'Square Neck', 'Sweetheart'];
 const FABRIC_TYPES = ['Georgette', 'Silk', 'Cotton', 'Chiffon', 'Net', 'Velvet', 'Crepe', 'Organza'];
+const LINING_TYPES = ['Without Lining', 'Full Lining', 'Half Lining'];
 
 export default function Step2DesignScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
@@ -21,18 +22,27 @@ export default function Step2DesignScreen({ navigation, route }: any) {
   const [garmentType, setGarmentType] = useState(draft.garmentType || 'Suit');
   const [designStyle, setDesignStyle] = useState(draft.designStyle || '');
   const [neckType, setNeckType] = useState(draft.neckType || '');
+  const [lining, setLining] = useState(draft.lining || 'Without Lining');
   const [fabricType, setFabricType] = useState(draft.fabricType || '');
   const [colour, setColour] = useState(draft.colour || '');
   const [designNotes, setDesignNotes] = useState(draft.designNotes || '');
   const [photoUri, setPhotoUri] = useState(draft.designPhotoUri || null);
   const [sketchData, setSketchData] = useState<string | null>(draft.designSketchData || null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handlePickPhoto = () => {
-    Alert.alert('Add Design Photo', 'Choose an option', [
-      { text: 'Camera', onPress: () => {} },
-      { text: 'Photo Library', onPress: () => {} },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
+    // Web: use a hidden file input to trigger the native image picker
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e: any) => {
+      const file = e.target?.files?.[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        setPhotoUri(url);
+      }
+    };
+    input.click();
   };
 
   const handleOpenSketch = () => {
@@ -61,6 +71,7 @@ export default function Step2DesignScreen({ navigation, route }: any) {
         garmentType,
         designStyle,
         neckType,
+        lining,
         fabricType,
         colour,
         designNotes,
@@ -137,6 +148,22 @@ export default function Step2DesignScreen({ navigation, route }: any) {
                     activeOpacity={0.8}
                   >
                     <Text style={[styles.chipText, neckType === n && styles.chipTextActive]}>{n}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.field}>
+              <FormLabel label="Lining" />
+              <View style={styles.chipGrid}>
+                {LINING_TYPES.map(l => (
+                  <TouchableOpacity
+                    key={l}
+                    style={[styles.chip, lining === l && styles.chipActive]}
+                    onPress={() => setLining(l)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.chipText, lining === l && styles.chipTextActive]}>{l}</Text>
                   </TouchableOpacity>
                 ))}
               </View>

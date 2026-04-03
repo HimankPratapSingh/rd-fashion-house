@@ -2,7 +2,7 @@
 import React, { useCallback, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  StatusBar, TextInput, Alert, RefreshControl,
+  StatusBar, TextInput, Alert, RefreshControl, Image,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -195,16 +195,20 @@ export default function ReadyMadeScreen({ navigation }: any) {
                   activeOpacity={isAdmin ? 0.8 : 1}
                 >
                   <View style={styles.itemCardLeft}>
-                    <View style={[styles.itemAvatar, { backgroundColor: Colors.goldPale }]}>
-                      <Text style={styles.itemAvatarText}>
-                        {item.category === 'Kurti' ? '👘' :
-                         item.category === 'Suit' ? '👔' :
-                         item.category === 'Saree' ? '🥻' :
-                         item.category === 'Lehenga' ? '👗' :
-                         item.category === 'Dress' ? '👗' :
-                         item.category === 'Shirt' ? '👕' : '🧥'}
-                      </Text>
-                    </View>
+                    {item.photoUri ? (
+                      <Image source={{ uri: item.photoUri }} style={styles.itemPhoto} resizeMode="cover" />
+                    ) : (
+                      <View style={[styles.itemAvatar, { backgroundColor: Colors.goldPale }]}>
+                        <Text style={styles.itemAvatarText}>
+                          {item.category === 'Kurti' ? '👘' :
+                           item.category === 'Suit' ? '👔' :
+                           item.category === 'Saree' ? '🥻' :
+                           item.category === 'Lehenga' ? '👗' :
+                           item.category === 'Dress' ? '👗' :
+                           item.category === 'Shirt' ? '👕' : '🧥'}
+                        </Text>
+                      </View>
+                    )}
                     <View style={{ flex: 1, marginLeft: 12 }}>
                       <Text style={styles.itemName}>{item.name}</Text>
                       <Text style={styles.itemMeta}>{item.category} · {item.size} · {item.colour}</Text>
@@ -378,10 +382,11 @@ const styles = StyleSheet.create({
   },
   itemCardLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 },
   itemAvatar: {
-    width: 44, height: 44, borderRadius: BorderRadius.md,
+    width: 52, height: 52, borderRadius: BorderRadius.md,
     alignItems: 'center', justifyContent: 'center',
   },
   itemAvatarText: { fontSize: 22 },
+  itemPhoto: { width: 52, height: 52, borderRadius: BorderRadius.md },
   itemName: { fontFamily: Fonts.bodyBold, fontSize: 14, color: Colors.dark },
   itemMeta: { fontFamily: Fonts.body, fontSize: 11, color: Colors.warmGray, marginTop: 2 },
   itemCardRight: { alignItems: 'flex-end', gap: 4 },

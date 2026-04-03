@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../navigation';
 import { canEdit, canViewBilling } from '../utils/auth';
 
-const STATUS_FLOW: Order['status'][] = ['Pending', 'Active', 'Stitching', 'Ready', 'Delivered'];
+const STATUS_FLOW: Order['status'][] = ['Pending', 'Active', 'Cutting', 'Stitching', 'Ready', 'Delivered'];
 
 export default function OrderDetailScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
@@ -21,6 +21,9 @@ export default function OrderDetailScreen({ navigation, route }: any) {
 
   // New state
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentInput, setPaymentInput] = useState('');
+  const [paymentModeInput, setPaymentModeInput] = useState('Cash');
   const [feedback, setFeedback] = useState<OrderFeedback | null>(null);
   const [ratingInput, setRatingInput] = useState(0);
   const [commentInput, setCommentInput] = useState('');
@@ -86,19 +89,27 @@ export default function OrderDetailScreen({ navigation, route }: any) {
 
   const handleDelete = () => {
     if (!isOwner) { Alert.alert('Permission Denied', 'Only the Owner can delete orders.'); return; }
-    Alert.alert('Delete Order', 'Are you sure you want to delete this order?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          if (order) {
-            await Storage.deleteOrder(order.id);
-            navigation.goBack();
-          }
+    Alert.alert(
+      'Delete Order',
+      `Delete order #${order?.orderNo} for ${order?.customerName}? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          onPress: async () => {
+            try {
+              if (order) {
+                await Storage.deleteOrder(order.id);
+                // Navigate to Orders tab to force list refresh
+                navigation.navigate('MainTabs', { screen: 'Orders' });
+              }
+            } catch {
+              Alert.alert('Error', 'Could not delete order. Please try again.');
+            }
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   const sendWhatsApp = (message: string) => {
@@ -107,6 +118,21 @@ export default function OrderDetailScreen({ navigation, route }: any) {
     if (!phone) { Alert.alert('No phone number', 'This order has no customer phone number.'); return; }
     const url = `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
     Linking.openURL(url).catch(() => Alert.alert('WhatsApp not available'));
+  };
+
+  const handleSavePayment = async () => {
+    if (!order) return;
+    const amount = parseFloat(paymentInput);
+    if (!amount || amount <= 0) {
+      Alert.alert('Invalid Amount', 'Please enter a valid payment amount.');
+      return;
+    }
+    const updated = { ...order, advancePaid: order.advancePaid + amount, paymentMode: paymentModeInput };
+    await Storage.saveOrder(updated);
+    setOrder(updated);
+    setShowPaymentModal(false);
+    setPaymentInput('');
+    Alert.alert('Payment Recorded', `₹${amount.toLocaleString('en-IN')} advance added.`);
   };
 
   const handleSaveFeedback = async () => {
@@ -391,6 +417,17 @@ export default function OrderDetailScreen({ navigation, route }: any) {
           </View>
         )}
 
+        {/* Advance Payment Button — owner only, order not delivered */}
+        {isOwner && order.status !== 'Delivered' && (
+          <TouchableOpacity
+            style={styles.advanceBtn}
+            onPress={() => { setPaymentInput(''); setShowPaymentModal(true); }}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.advanceBtnText}>💰 Add Advance Payment</Text>
+          </TouchableOpacity>
+        )}
+
         {/* Actions */}
         <View style={styles.actions}>
           {isOwner && (
@@ -483,6 +520,58 @@ export default function OrderDetailScreen({ navigation, route }: any) {
 
         <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* Advance Payment Modal */}
+      <Modal
+        visible={showPaymentModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowPaymentModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowPaymentModal(false)}
+        >
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>Add Advance Payment</Text>
+            <Text style={styles.modalSub}>Current advance: ₹{order.advancePaid.toLocaleString('en-IN')}</Text>
+
+            <Text style={[styles.blockTitle, { marginBottom: 8, marginTop: 4 }]}>AMOUNT (₹)</Text>
+            <TextInput
+              style={styles.paymentInput}
+              placeholder="Enter amount"
+              placeholderTextColor={Colors.warmGray}
+              keyboardType="numeric"
+              value={paymentInput}
+              onChangeText={setPaymentInput}
+              autoFocus
+            />
+
+            <Text style={[styles.blockTitle, { marginBottom: 8, marginTop: 14 }]}>PAYMENT MODE</Text>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 20 }}>
+              {['Cash', 'UPI', 'Card'].map(pm => (
+                <TouchableOpacity
+                  key={pm}
+                  style={[styles.pmChipModal, paymentModeInput === pm && styles.pmChipModalActive]}
+                  onPress={() => setPaymentModeInput(pm)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.pmChipModalText, paymentModeInput === pm && { color: Colors.dark }]}>{pm}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity style={styles.savePaymentBtn} onPress={handleSavePayment} activeOpacity={0.85}>
+              <Text style={styles.savePaymentBtnText}>Save Payment</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.waCancelBtn} onPress={() => setShowPaymentModal(false)} activeOpacity={0.85}>
+              <Text style={styles.waCancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* WhatsApp Modal */}
       <Modal
@@ -652,6 +741,31 @@ const styles = StyleSheet.create({
   },
   billingHiddenIcon: { fontSize: 28, marginBottom: 8 },
   billingHiddenText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmGray },
+
+  advanceBtn: {
+    marginHorizontal: Spacing.lg, marginTop: Spacing.md,
+    backgroundColor: Colors.dark, borderRadius: BorderRadius.md,
+    paddingVertical: 13, alignItems: 'center',
+  },
+  advanceBtnText: { fontFamily: Fonts.bodyBold, fontSize: 14, color: Colors.gold },
+
+  paymentInput: {
+    borderWidth: 1.5, borderColor: Colors.border, borderRadius: BorderRadius.md,
+    paddingHorizontal: 14, paddingVertical: 12,
+    fontFamily: Fonts.displayMedium, fontSize: 20, color: Colors.dark,
+    backgroundColor: Colors.offWhite, marginBottom: 4,
+  },
+  pmChipModal: {
+    flex: 1, paddingVertical: 10, borderRadius: BorderRadius.md,
+    borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.offWhite, alignItems: 'center',
+  },
+  pmChipModalActive: { borderColor: Colors.gold, backgroundColor: Colors.goldPale },
+  pmChipModalText: { fontFamily: Fonts.bodyBold, fontSize: 13, color: Colors.warmGray },
+  savePaymentBtn: {
+    backgroundColor: Colors.dark, borderRadius: BorderRadius.sm,
+    paddingVertical: 14, alignItems: 'center', marginBottom: 10,
+  },
+  savePaymentBtnText: { fontFamily: Fonts.bodyBold, fontSize: 14, color: Colors.gold },
 
   actions: { marginHorizontal: Spacing.lg, marginTop: Spacing.md, gap: 8 },
   editBtn: {

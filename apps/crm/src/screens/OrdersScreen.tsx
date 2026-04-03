@@ -10,7 +10,7 @@ import { Storage, Order } from '../utils/store';
 import { StatusBadge } from '../components';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const STATUS_FILTERS = ['All', 'Pending', 'Active', 'Stitching', 'Ready', 'Delivered'];
+const STATUS_FILTERS = ['All', 'Pending', 'Active', 'Cutting', 'Stitching', 'Ready', 'Delivered'];
 
 function ordersToCSV(orders: Order[]): string {
   const headers = ['Order ID', 'Customer', 'Garment', 'Status', 'Total', 'Advance', 'Balance', 'Order Date', 'Delivery Date'];

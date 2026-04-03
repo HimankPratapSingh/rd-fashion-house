@@ -58,6 +58,7 @@ export const OutlineButton = ({
 // ── Status Badge ──────────────────────────────────────────────────────────────
 const badgeConfig: Record<string, { bg: string; color: string }> = {
   Active:    { bg: Colors.activeBg,  color: Colors.activeGreen },
+  Cutting:   { bg: '#FFF3E0',        color: '#E65100' },
   Stitching: { bg: Colors.pendingBg, color: Colors.pendingBlue },
   Ready:     { bg: Colors.readyBg,   color: Colors.readyAmber },
   Delivered: { bg: '#F5F5F5',        color: '#555' },

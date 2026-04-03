@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  TextInput, StatusBar, Alert, KeyboardAvoidingView, Platform,
+  TextInput, StatusBar, Alert, KeyboardAvoidingView, Platform, Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Fonts, Spacing, BorderRadius, Shadow } from '../theme';
@@ -27,7 +27,19 @@ export default function AddReadyMadeItemScreen({ navigation, route }: any) {
   const [costPrice, setCostPrice] = useState(existing?.costPrice ? String(existing.costPrice) : '');
   const [stockQty, setStockQty] = useState(existing ? String(existing.stockQty) : '');
   const [lowStockThreshold, setLowStockThreshold] = useState(existing ? String(existing.lowStockThreshold) : '5');
+  const [photoUri, setPhotoUri] = useState(existing?.photoUri || '');
   const [saving, setSaving] = useState(false);
+
+  const handlePickPhoto = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e: any) => {
+      const file = e.target?.files?.[0];
+      if (file) setPhotoUri(URL.createObjectURL(file));
+    };
+    input.click();
+  };
 
   const validate = () => {
     if (!name.trim()) { Alert.alert('Required', 'Please enter item name.'); return false; }
@@ -57,6 +69,7 @@ export default function AddReadyMadeItemScreen({ navigation, route }: any) {
       stockQty: Number(stockQty),
       lowStockThreshold: Number(lowStockThreshold) || 5,
       addedAt: existing?.addedAt || new Date().toLocaleDateString('en-IN'),
+      photoUri: photoUri || undefined,
     };
     await Storage.saveReadyMadeItem(item);
     setSaving(false);
@@ -92,6 +105,26 @@ export default function AddReadyMadeItemScreen({ navigation, route }: any) {
           {/* Basic Info */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Item Details</Text>
+
+            {/* Item Photo */}
+            <Text style={styles.label}>Item Photo</Text>
+            {photoUri ? (
+              <View style={styles.photoContainer}>
+                <Image source={{ uri: photoUri }} style={styles.photoPreview} resizeMode="cover" />
+                <TouchableOpacity style={styles.changePhotoBtn} onPress={handlePickPhoto} activeOpacity={0.8}>
+                  <Text style={styles.changePhotoText}>Change Photo</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.removePhotoBtn} onPress={() => setPhotoUri('')} activeOpacity={0.8}>
+                  <Text style={styles.removePhotoText}>Remove</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.photoPlaceholder} onPress={handlePickPhoto} activeOpacity={0.8}>
+                <Text style={styles.photoPlaceholderIcon}>📷</Text>
+                <Text style={styles.photoPlaceholderText}>Tap to add item photo</Text>
+                <Text style={styles.photoPlaceholderSub}>From camera or photo library</Text>
+              </TouchableOpacity>
+            )}
 
             <Text style={styles.label}>Item Name *</Text>
             <TextInput
@@ -267,6 +300,20 @@ const styles = StyleSheet.create({
   textArea: { height: 80, paddingTop: 10 },
   row: { flexDirection: 'row', gap: 12 },
   halfField: { flex: 1 },
+  photoPlaceholder: {
+    borderWidth: 1.5, borderColor: Colors.goldLight, borderStyle: 'dashed',
+    borderRadius: BorderRadius.md, padding: 24, alignItems: 'center', marginTop: 4,
+    backgroundColor: Colors.screenBg,
+  },
+  photoPlaceholderIcon: { fontSize: 28, marginBottom: 6 },
+  photoPlaceholderText: { fontFamily: Fonts.bodyBold, fontSize: 13, color: Colors.charcoal },
+  photoPlaceholderSub: { fontFamily: Fonts.body, fontSize: 11, color: Colors.warmGray, marginTop: 3 },
+  photoContainer: { marginTop: 4 },
+  photoPreview: { width: '100%', height: 180, borderRadius: BorderRadius.md },
+  changePhotoBtn: { marginTop: 6, alignItems: 'center' },
+  changePhotoText: { fontFamily: Fonts.bodyBold, fontSize: 12, color: Colors.gold },
+  removePhotoBtn: { marginTop: 4, alignItems: 'center' },
+  removePhotoText: { fontFamily: Fonts.bodyBold, fontSize: 12, color: Colors.danger },
   chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
   chip: {
     paddingHorizontal: 12, paddingVertical: 7,

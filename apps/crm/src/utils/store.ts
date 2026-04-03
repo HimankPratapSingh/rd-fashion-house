@@ -42,7 +42,7 @@ export interface Order {
   designSketchData?: string;
   measurements: Measurement; billItems: BillItem[];
   advancePaid: number; paymentMode: string;
-  status: 'Pending' | 'Active' | 'Stitching' | 'Ready' | 'Delivered';
+  status: 'Pending' | 'Active' | 'Cutting' | 'Stitching' | 'Ready' | 'Delivered';
   createdAt: string;
   assignedTo?: string;
   loyaltyPointsEarned?: number;
@@ -100,6 +100,7 @@ export interface ReadyMadeItem {
   stockQty: number;
   lowStockThreshold: number;
   addedAt: string;
+  photoUri?: string;
 }
 
 export interface ReadyMadeSaleItem {
