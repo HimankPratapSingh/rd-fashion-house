@@ -12,13 +12,7 @@ import { AuthStorage, AppUser } from '../utils/auth';
 import { FormLabel, FormInput, PrimaryButton } from '../components';
 import { useAuth } from '../navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  saveFirebaseConfig, loadFirebaseConfig, initFirebase,
-  FirebaseConfig, getShopId,
-} from '../utils/firebase';
-import {
-  syncNow, isSyncEnabled, setSyncEnabled, getLastSyncTime,
-} from '../utils/cloudSync';
+import { getLastSyncTime } from '../utils/cloudSync';
 
 export default function SettingsScreen({ navigation }: any) {
   const { user: currentUser } = useAuth();
@@ -35,15 +29,7 @@ export default function SettingsScreen({ navigation }: any) {
   const [activeLang, setActiveLang] = useState<LangKey>(getCurrentLangKey());
 
   // Cloud Sync state
-  const [syncEnabled, setSyncEnabledState] = useState(false);
-  const [syncing, setSyncing] = useState(false);
   const [lastSync, setLastSync] = useState<string | null>(null);
-  const [shopId, setShopId] = useState('');
-  const [fbConfig, setFbConfig] = useState<FirebaseConfig>({
-    apiKey: '', authDomain: '', projectId: '',
-    storageBucket: '', messagingSenderId: '', appId: '',
-  });
-  const [showFbForm, setShowFbForm] = useState(false);
 
   // App settings state (admin only)
   const [settings, setSettings] = useState<AppSettings>(defaultAppSettings);
@@ -60,52 +46,9 @@ export default function SettingsScreen({ navigation }: any) {
     if (isAdmin) {
       AuthStorage.getUsers().then(setUsers);
       Storage.getAppSettings().then(setSettings);
-      // Load cloud sync state
-      isSyncEnabled().then(setSyncEnabledState);
       getLastSyncTime().then(setLastSync);
-      getShopId().then(setShopId);
-      loadFirebaseConfig().then(cfg => { if (cfg) setFbConfig(cfg); });
     }
   }, [isAdmin]));
-
-  // ── Cloud Sync handlers ───────────────────────────────────────────────────
-  const handleSaveFirebaseConfig = async () => {
-    if (!fbConfig.apiKey || !fbConfig.projectId) {
-      Alert.alert('Missing Fields', 'API Key and Project ID are required.');
-      return;
-    }
-    try {
-      await saveFirebaseConfig(fbConfig);
-      await initFirebase(fbConfig);
-      setShowFbForm(false);
-      Alert.alert('✅ Firebase Connected', 'Config saved. You can now enable cloud sync.');
-    } catch (e: any) {
-      Alert.alert('Error', e.message || 'Could not connect to Firebase.');
-    }
-  };
-
-  const handleToggleSync = async (val: boolean) => {
-    setSyncEnabledState(val);
-    await setSyncEnabled(val);
-    if (val) {
-      Alert.alert('Cloud Sync Enabled', 'Changes will now automatically sync to Firebase.');
-    }
-  };
-
-  const handleSyncNow = async (direction: 'push' | 'pull' | 'both') => {
-    setSyncing(true);
-    try {
-      await syncNow(direction);
-      const t = await getLastSyncTime();
-      setLastSync(t);
-      const label = direction === 'push' ? 'Upload' : direction === 'pull' ? 'Download' : 'Sync';
-      Alert.alert('✅ ' + label + ' Complete', 'Data has been synced with Firebase.');
-    } catch (e: any) {
-      Alert.alert('Sync Failed', e.message || 'Could not sync with Firebase.');
-    } finally {
-      setSyncing(false);
-    }
-  };
 
   // ── Staff handlers ────────────────────────────────────────────────────────
   const handleExport = async () => {

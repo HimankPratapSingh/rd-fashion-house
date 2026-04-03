@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ActivityIndicator,
-  useWindowDimensions, TouchableOpacity, Image, Platform, ImageSourcePropType,
+  useWindowDimensions, TouchableOpacity, Image, ImageSourcePropType,
 } from 'react-native';
 
 const LOGO_SRC: ImageSourcePropType = require('../assets/images/rd_logo.png');

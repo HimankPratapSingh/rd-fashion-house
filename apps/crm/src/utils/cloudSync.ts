@@ -2,22 +2,10 @@
 // Offline-first cloud sync: AsyncStorage is the source of truth.
 // Firestore is synced asynchronously — never blocks the UI.
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { syncDoc, deleteCloudDoc, fetchCollection, syncCollection, getDB } from './firebase';
+import { syncDoc, deleteCloudDoc, fetchCollection, syncCollection } from './firebase';
 import { Storage } from './store';
 
 const LAST_SYNC_KEY = '@rd_last_sync';
-const SYNC_ENABLED_KEY = '@rd_cloud_sync_enabled';
-
-// ── Sync enabled flag ────────────────────────────────────────────────────────
-
-export async function setSyncEnabled(enabled: boolean): Promise<void> {
-  await AsyncStorage.setItem(SYNC_ENABLED_KEY, enabled ? '1' : '0');
-}
-
-export async function isSyncEnabled(): Promise<boolean> {
-  const val = await AsyncStorage.getItem(SYNC_ENABLED_KEY);
-  return val !== '0'; // enabled by default unless explicitly disabled
-}
 
 // ── Last sync time ───────────────────────────────────────────────────────────
 
@@ -169,14 +157,3 @@ export async function pullAllFromCloud(): Promise<void> {
   ]);
 }
 
-// ── Full two-way sync ────────────────────────────────────────────────────────
-
-export async function syncNow(direction: 'push' | 'pull' | 'both' = 'both'): Promise<void> {
-  const db = await getDB();
-  if (!db) throw new Error('Firebase not configured. Add your Firebase config in Settings → Cloud Sync.');
-
-  if (direction === 'push' || direction === 'both') await pushAllToCloud();
-  if (direction === 'pull' || direction === 'both') await pullAllFromCloud();
-
-  await setLastSyncTime();
-}
