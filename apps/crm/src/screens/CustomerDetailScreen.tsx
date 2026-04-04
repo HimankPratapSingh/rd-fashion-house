@@ -74,12 +74,7 @@ export default function CustomerDetailScreen({ navigation, route }: any) {
         text: 'Delete', style: 'destructive',
         onPress: async () => {
           if (!customer) return;
-          const all = await Storage.getCustomers();
-          await Storage.saveCustomer({ ...customer }); // ensure exists before filter
-          const list = all.filter(c => c.id !== customer.id);
-          // Re-save without this customer by deleting directly
-          const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-          await AsyncStorage.setItem('rd_customers', JSON.stringify(list));
+          await Storage.deleteCustomer(customer.id);
           navigation.goBack();
         },
       },

@@ -133,7 +133,8 @@ export default function SettingsScreen({ navigation }: any) {
           Alert.alert('Final Confirmation', 'All data will be wiped. Continue?', [
             { text: 'No, keep data', style: 'cancel' },
             { text: 'Yes, delete everything', style: 'destructive', onPress: async () => {
-              Alert.alert('Cleared', 'All data has been deleted.');
+              await Storage.clearAllData();
+              Alert.alert('Cleared', 'All data has been deleted. Please refresh the app.');
             }},
           ]);
         }},

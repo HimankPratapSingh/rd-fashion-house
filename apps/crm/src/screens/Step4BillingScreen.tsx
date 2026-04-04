@@ -15,7 +15,7 @@ export default function Step4BillingScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
   const { draft } = route.params;
   const [items, setItems] = useState<BillItem[]>(draft.billItems || [
-    { id: '1', description: `${draft.garmentType} Stitching`, quantity: 1, rate: 0, amount: 0 },
+    { id: '1', description: draft.garmentType ? `${draft.garmentType} Stitching` : 'Stitching', quantity: 1, rate: 0, amount: 0 },
   ]);
   const [advancePaid, setAdvancePaid] = useState(String(draft.advancePaid || '0'));
   const [paymentMode, setPaymentMode] = useState(draft.paymentMode || 'Cash');
@@ -233,7 +233,7 @@ export default function Step4BillingScreen({ navigation, route }: any) {
                     onPress={() => setAssignedTo(s.id === '' ? '' : s.name)}
                     activeOpacity={0.8}
                   >
-                    <Text style={[styles.staffChipText, assignedTo === s.name && styles.staffChipTextActive]}>{s.name}</Text>
+                    <Text style={[styles.staffChipText, (s.id === '' ? assignedTo === '' : assignedTo === s.name) && styles.staffChipTextActive]}>{s.name}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>

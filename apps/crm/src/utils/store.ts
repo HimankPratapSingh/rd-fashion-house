@@ -239,6 +239,11 @@ export const Storage = {
     await AsyncStorage.setItem(ORDERS_KEY, JSON.stringify(list.filter(o => o.id !== id)));
     removeOrder(id);
   },
+  async deleteCustomer(id: string): Promise<void> {
+    const list = await this.getCustomers();
+    await AsyncStorage.setItem(CUSTOMERS_KEY, JSON.stringify(list.filter(c => c.id !== id)));
+    removeCustomer(id);
+  },
   async getNextOrderNo(): Promise<number> {
     try {
       const val = await AsyncStorage.getItem(ORDER_COUNTER_KEY);
@@ -472,6 +477,15 @@ export const Storage = {
   },
   async saveAppSettings(settings: AppSettings): Promise<void> {
     await AsyncStorage.setItem(APP_SETTINGS_KEY, JSON.stringify(settings));
+  },
+
+  async clearAllData(): Promise<void> {
+    await AsyncStorage.multiRemove([
+      ORDERS_KEY, CUSTOMERS_KEY, ORDER_COUNTER_KEY,
+      FABRIC_KEY, STAFF_KEY, WORK_TASKS_KEY, ATTENDANCE_KEY,
+      READY_MADE_ITEMS_KEY, READY_MADE_SALES_KEY, READY_MADE_SALE_COUNTER_KEY,
+      APPOINTMENTS_KEY, EXPENSES_KEY, SUPPLIERS_KEY, FEEDBACK_KEY,
+    ]);
   },
 
   async exportAllData(): Promise<string> {
