@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ActivityIndicator,
-  useWindowDimensions, TouchableOpacity, Image, ImageSourcePropType,
+  TouchableOpacity, Image, ImageSourcePropType,
 } from 'react-native';
 
 const LOGO_SRC: ImageSourcePropType = require('../assets/images/rd_logo.png');
@@ -112,13 +112,11 @@ function BoutiqueSidebar({ state, navigation }: any) {
 }
 
 function MainTabs() {
-  const { width } = useWindowDimensions();
-  const isTablet  = width >= 768;
   return (
     <Tab.Navigator
-      tabBar={props => isTablet ? <BoutiqueSidebar {...props} /> : <BoutiqueTabBar {...props} />}
+      tabBar={props => <BoutiqueTabBar {...props} />}
       screenOptions={{ headerShown: false }}
-      tabBarPosition={isTablet ? 'left' : 'bottom'}
+      tabBarPosition="bottom"
     >
       <Tab.Screen name="Home"      component={HomeScreen} />
       <Tab.Screen name="Orders"    component={OrdersScreen} />

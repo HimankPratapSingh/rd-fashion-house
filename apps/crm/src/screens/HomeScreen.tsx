@@ -191,14 +191,9 @@ export default function HomeScreen({ navigation }: any) {
     { label: 'Settings',     icon: '⚙️',  screen: 'Settings',     show: isOwner || can('viewSettings') },
   ].filter(t => t.show);
 
-  // On tablet/desktop the sidebar is 160 px wide — subtract it so tiles
-  // don't overflow into (or behind) the sidebar column.
-  const SIDEBAR_W = 160;
-  const isTablet = width >= 768;
-  const contentWidth = isTablet ? width - SIDEBAR_W : width;
-  const numCols = contentWidth < 480 ? 2 : contentWidth < 768 ? 3 : 4;
+  const numCols = width < 480 ? 2 : width < 768 ? 3 : 4;
   const tileGap = 12;
-  const tileW = (contentWidth - Spacing.xl * 2 - tileGap * (numCols - 1)) / numCols;
+  const tileW = (width - Spacing.xl * 2 - tileGap * (numCols - 1)) / numCols;
 
   const Tile = ({ item }: { item: { label: string; icon: string; screen: string } }) => (
     <TouchableOpacity

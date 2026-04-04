@@ -65,9 +65,7 @@ function getAvailableFYs(orders: Order[], expenses: Expense[], manualFYs: number
 // ── Bar chart component ───────────────────────────────────────────────────────
 function FYBarChart({ orders, expenses, fyYear }: { orders: Order[]; expenses: Expense[]; fyYear: number }) {
   const { width } = useWindowDimensions();
-  // Subtract sidebar width (160 px) on tablet so bars don't overflow the content area
-  const SIDEBAR_W = width >= 768 ? 160 : 0;
-  const BAR_MAX_W = Math.max(0, width - SIDEBAR_W - Spacing.lg * 2 - 32 - 36 - 16);
+  const BAR_MAX_W = Math.max(0, width - Spacing.lg * 2 - 32 - 36 - 16);
   const months = getFYMonths(fyYear);
   const data = months.map(m => {
     const mo = orders.filter(o => {
