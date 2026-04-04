@@ -48,7 +48,11 @@ const imageLoaderConfig = {
   test: /\.(gif|jpe?g|png|svg)$/,
   use: {
     loader: 'url-loader',
-    options: { name: '[name].[ext]' },
+    options: {
+      name: '[name].[ext]',
+      esModule: false,          // ensure require() returns the URL string, not { default: url }
+      limit: 10 * 1024 * 1024, // always inline as base64 (up to 10 MB)
+    },
   },
 };
 
