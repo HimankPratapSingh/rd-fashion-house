@@ -64,6 +64,9 @@ export const DEFAULT_CONTENT = {
     { id: 1, name: 'Priya Sharma', role: 'Bride', text: 'My bridal lehenga was absolutely stunning. The attention to detail and fit was perfect. I felt like royalty!', stars: 5 },
     { id: 2, name: 'Anjali Gupta', role: 'Regular Customer', text: 'Been coming here for 5 years. Best tailoring in Ghaziabad — always on time, always perfect!', stars: 5 },
     { id: 3, name: 'Sunita Verma', role: 'Customer', text: 'They turned my dream design into reality. The fabric quality and craftsmanship is unmatched.', stars: 5 },
+    { id: 4, name: 'Rekha Agarwal', role: "Bride's Mother", text: "Got my daughter's entire bridal trousseau stitched here. Every single piece was flawless. Highly recommend!", stars: 5 },
+    { id: 5, name: 'Meena Joshi', role: 'Regular Customer', text: "The blouse fitting is always perfect — better than any boutique I've tried in Ghaziabad or Delhi.", stars: 5 },
+    { id: 6, name: 'Divya Singh', role: 'Customer', text: 'Brought a very complex design from Pinterest and they nailed it exactly. Extremely talented team.', stars: 5 },
   ],
 };
 
